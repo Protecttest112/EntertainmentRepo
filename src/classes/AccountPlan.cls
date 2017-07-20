@@ -2,13 +2,13 @@ global class AccountPlan {
 
    webservice String area; 
    webservice String region; 
- 
+  
    //Define an object in apex that is exposed in apex web service
    global class Plan {
       webservice String name;
       webservice Integer planNumber;
       webservice Date planningPeriod;
-      webservice Id planId;
+      webservice Id planId;                 
    }
 
    webservice static Plan createAccountPlan(Account vPlan) {
