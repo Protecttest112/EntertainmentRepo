@@ -1,0 +1,9 @@
+<apex:page standardController="contact" action="{!URLFOR($Action.Account.New,null,[uiInputText ="+46"],true)}">
+<script>
+window.onload=asd;
+function asd(){
+//window.open('/003/e?con10=%2B46','_self');
+}
+return true;
+</script>
+</apex:page>

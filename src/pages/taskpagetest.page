@@ -1,0 +1,528 @@
+<apex:page standardController="Task" extensions="Z_LogActivityController" id="page" sidebar="false" showHeader="false">
+    <!-- Library Includes -->
+    <!--
+    <apex:includeScript value="{!URLFOR($Resource.jqGrid,'/js/jquery-1.9.0.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqGrid,'/js/jquery.jqGrid.min.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.jqGrid,'/js/i18n/grid.locale-en.js')}"/>
+    <apex:includeScript value="{!URLFOR($Resource.FlexBox, '/FlexBox/js/jquery.flexbox.min.js')}"/>
+
+    
+    <apex:stylesheet value="{!URLFOR($Resource.FlexBox, '/FlexBox/css/jquery.flexbox.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqGrid,'/css/ui.jqgrid.css')}"/>
+    <apex:stylesheet value="{!URLFOR($Resource.jqGrid,'/css/ui-lightness/jquery-ui-1.10.3.custom.min.css')}"/>
+    -->
+    <script>
+        var j$ = jQuery.noConflict();
+        
+        function saveTask1(){
+  
+            var gridRows = j$("#list2").getRowData();
+            saveAF(JSON.stringify(gridRows));
+           
+        }
+        
+ 
+    </script>
+    
+    <apex:form id="form">    
+        <apex:pageMessages id="errorPanel"></apex:pageMessages>
+        <apex:actionFunction action="{!saveAndRedirect}" name="saveTask" reRender="form,msg, errorPanel" status="loading">
+            <apex:param value="" name="p1" assignTo="{!strJSONGrid}"/>
+        </apex:actionFunction>
+      
+        <apex:actionStatus id="Saving" startText="Saving..."/>
+        <apex:pageblock mode="edit" id="taskPB" title="Log an Activity">            
+            <apex:pagemessages id="msg" />
+            <apex:pageblockButtons >
+                <apex:commandButton onclick="saveTask();return false;" value="Save"/>
+                <apex:commandButton action="{!cancel}" value="Cancel" immediate="true"/>
+                <apex:actionStatus id="loading">
+                            <apex:facet name="start">
+                                <img src="/img/loading.gif"/>
+                            </apex:facet>
+                </apex:actionStatus>
+            </apex:pageblockButtons>
+<apex:outputpanel rendered="{!OR(ISNULL(Task.RecordTypeId),CASESAFEID(Task.RecordTypeId)='012600000001BOjAAM')}">
+            
+            <apex:pageblockSection title="Details" columns="2" collapsible="false" id="taskCDPBS">
+            <apex:inputField value="{!task.OwnerId}"/>
+            <apex:outputfield value="{!task.RecordTypeId}"/>
+            <apex:inputField id="tsttt" value="{!task.Status}" required="true" rendered="TRUE"/>
+            <apex:inputfield value="{!task.Subject}" required="true" id="Subject" />
+            <apex:inputfield value="{!task.ActivityDate}" required="true"/>
+<!--<apex:pageblockSectionItem id="actSub"><apex:outputLabel value="Subject" /><apex:outputPanel ><div class="requiredInput"><div class="requiredBlock"></div><apex:inputText value="{!actSubStr}"/></div>
+</apex:outputPanel>
+</apex:pageblockSectionItem>-->           
+            
+                <apex:pageblockSectionItem id="actType">
+                    <apex:outputLabel value="Task/Event Type" />
+                    <apex:outputPanel >
+                          
+                    </apex:outputPanel>
+                </apex:pageblockSectionItem>
+              <apex:inputField value="{!task.Priority}" required="true"/>                               
+              
+              <apex:pageblocksectionitem /> 
+              
+              <apex:pageblocksectionitem />
+              
+              <apex:pageblocksectionitem /> 
+              </apex:pageblocksection>
+              
+              <apex:pageblocksection title="Dealership Contact Information " showheader="true" columns="2">  
+              
+              <apex:pageBlockSectionItem id="contactPBSI">
+                  <apex:outputLabel >Contacts</apex:outputLabel>
+                      
+                      </apex:pageBlockSectionItem>
+              <apex:pageBlockSectionItem />
+            
+                <apex:pageBlockSectionItem id="AccFLXBOXPBSI"  >
+                    <apex:outputLabel >Accounts</apex:outputLabel>
+                    <apex:actionRegion >
+                        
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>
+                
+                 <apex:pageBlockSectionItem id="OppFLXBOXPBSI"   rendered="true">
+                    <apex:outputLabel >Opportunities</apex:outputLabel>
+                    <apex:actionRegion >
+                       
+                     
+                    </apex:actionRegion>
+                </apex:pageBlockSectionItem>  
+                <apex:pageBlockSectionItem />
+              
+                <apex:pageblocksectionitem />
+                                     
+</apex:pageblocksection>
+
+<apex:pageblocksection title="Products" showheader="true" columns="2">
+                    <apex:pageblocksectionitem />
+                </apex:pageblocksection>
+                <apex:pageblocksection title="DMKT Activity Fields" showheader="true" columns="2">
+                   
+                </apex:pageblocksection>
+                <apex:pageblocksection title="Description Information" showheader="true" columns="1">
+                    <apex:inputfield value="{!task.Description}" required="false"/>
+                </apex:pageblocksection>
+               
+            
+     <!-- ***********************************************************************RECURRENCE*********************************************************************** -->
+<apex:pageBlockSection title="Recurrence">
+<apex:actionRegion >
+<div class="pbSubsection">
+    <table class="detailList" border="0" cellpadding="0" cellspacing="0">
+        <tbody> 
+            <tr class="detailRow">
+                <td colspan="4">
+                    <div>
+                        <apex:inputHidden value="{!isRecurrence}" id="myinputvar" />
+                       <apex:inputcheckbox id="IsRecurrence"  onclick="ManageDiv('{!$Component.IsRecurrence}')" value="{!sun1}"/>
+                            <label for="IsRecurrence">Create Recurring Series of Tasks</label> 
+                                <div class="hiddenWarning" id="DisabledRecurrenceMsgDiv" style="visibility: hidden;" > You cannot create a recurring task series with a group task.</div>
+                    
+                    </div>
+                </td>
+            </tr> 
+            
+            <tr class="detailRow last"> 
+                <td colspan="3">
+                    <div id="recpat" style="display:none;">
+                        
+                        <table width="100%"> 
+                            <tbody>
+                                <tr>
+                                    <td class="labelCol">
+                                        <label>Frequency</label>
+                                    </td>
+                                    
+                    <td> 
+                        <table class="recurrenceTable">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <div>
+                                            <div>
+                                                <apex:inputHidden value="{!RECURRENCETYPE}" id="myHiddenVar" />
+                                                <input id="rectypeftd" name="rectype" onClick="radiobut();" type="radio" value="{!RECURRENCETYPE}" onblur="document.getElementById('{!$Component.myHiddenVar}').value = this.value;" />
+                                                
+                                                
+                                                <label for="rectypeftd">Daily</label>
+                                            </div>
+                                            <div>
+                                                <input id="rectypeftw" name="rectype" onClick="radiobut();" type="radio" value="{!RECURRENCETYPE}" onblur="document.getElementById('{!$Component.myHiddenVar}').value = this.value;" />
+                                                <label for="rectypeftw">Weekly</label> 
+                                            </div>
+                                            <div>
+                                                <input id="rectypeftm" name="rectype" onClick="radiobut();" type="radio" value="{!RECURRENCETYPE}" onblur="document.getElementById('{!$Component.myHiddenVar}').value = this.value;" /><label for="rectypeftm">Monthly</label>
+                                            </div> 
+                                            <div>
+                                                <input id="rectypefty" name="rectype" onClick="radiobut();" type="radio" value="{!RECURRENCETYPE}" onblur="document.getElementById('{!$Component.myHiddenVar}').value = this.value;" /><label for="rectypefty">Yearly</label>
+                                            </div>
+                                            </div>
+                                    </td> 
+                            <!-- For Period -->
+                                    <td>
+                                            <div class="periodElementGroup" id="d" >
+                                            <div>
+                                                <input checked="checked" id="recdd0" name="recd" title="Recurs every weekday" type="radio" value="d0"/><label for="recdd0">Every weekday</label>
+                                            </div> 
+                                            <div>
+                                                <input id="recdd1" name="recd" title="Specify interval in days" type="radio" value="d1"/><label for="recdd1"></label>
+                                                Every <input id="di" name="di" onkeypress="document.getElementById('recdd1').checked=true;" size="3" title="specify interval in days" type="text" value="1"/> day(s)
+                                            </div> 
+                                            </div>  
+                                            <div class="periodElementGroup" id="w" style="display: none;" > 
+                                            <div>
+                                            Recurs every <input id="wi" name="wi" size="3" title="specify interval in weeks" type="text" value="1"/> week(s) on
+                                            </div>
+                                            <div>
+                                             <apex:inputHidden value="{!RecurrenceDayOfWeekMask}" id="myHiddenVar1" />
+                                            <input id="1" name="1" type="checkbox" value="1" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;" />
+                                                <label for="1">Sunday</label><input id="2" name="2" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="alert(this.checked)" onchange="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;" />
+                                                <label for="2">Monday</label><input id="4" name="4" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;" />
+                                                <label for="4">Tuesday</label><input id="8" name="8" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;"/> 
+                                                <label for="8">Wednesday</label><input id="16" name="16" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;"/> 
+                                                <label for="16">Thursday</label><input id="32" name="32" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;"/> 
+                                                <label for="32">Friday</label><input id="64" name="64" type="checkbox" value="{!RecurrenceDayOfWeekMask}" onblur="document.getElementById('{!$Component.myHiddenVar1}').value = this.value;"/> 
+                                                <label for="64">Saturday</label></div></div>  
+                                            <div class="periodElementGroup" id="m" style="display: none;"> 
+                                            <div>
+                                            <apex:inputHidden value="{!RecurrenceDayOfMonth}" id="myHiddenVar2" />
+                                            <apex:inputHidden value="{!days}" id="myHiddenVar3" />                                            
+                                            <input checked="checked" id="recmm0" name="recm" title="Specify number of days into month and monthly interval" type="radio" value="{!RecurrenceDayOfMonth}" onblur="document.getElementById('{!$Component.myHiddenVar2}').value = this.value;" /> <label for="recmm0"></label>
+                                            On day <select id="mdom" name="mdom" value="{!days}" onchange="document.getElementById('recmm0').checked=true;" title="select day of the month" onblur="document.getElementById('{!$Component.myHiddenVar3}').value = this.value;">  
+                                                <option value="1" selected="selected">1</option> 
+                                                <option value="2">2</option> 
+                                                <option value="3">3</option> 
+                                                <option value="4">4</option> 
+                                                <option value="5">5</option> 
+                                                <option value="6">6</option> 
+                                                <option value="7">7</option> 
+                                                <option value="8">8</option> 
+                                                <option value="9">9</option> 
+                                                <option value="10">10</option> 
+                                                <option value="11">11</option> 
+                                                <option value="12">12</option> 
+                                                <option value="13">13</option> 
+                                                <option value="14">14</option> 
+                                                <option value="15">15</option> 
+                                                <option value="16">16</option> 
+                                                <option value="17">17</option> 
+                                                <option value="18">18</option> 
+                                                <option value="19">19</option> 
+                                                <option value="20">20</option> 
+                                                <option value="21">21</option> 
+                                                <option value="22">22</option> 
+                                                <option value="23">23</option>
+                                                <option value="24">24</option>
+                                                <option value="25">25</option>
+                                                <option value="26">26</option>
+                                                <option value="27">27</option>
+                                                <option value="28">28</option>
+                                                <option value="29">29</option>
+                                                <option value="30">30</option>
+                                                <option value="31">31</option>  
+                                            </select> of every 
+                                            <input id="mint" name="mint" onkeypress="document.getElementById('recmm0').checked=true;" size="3" title="specify interval in months" type="text" value="{!RecurrenceDayOfMonth}"/> month(s)
+                                            </div>  
+                                            <div> 
+                                            <apex:inputHidden value="{!monthlyinterval}" id="myHiddenVar4" />      
+                                            <apex:inputHidden value="{!whichweek}" id="myHiddenVar6" /> 
+                                            <input id="recmm1" name="recm" title="Specify which day of which week and the monthly interval" type="radio" value="{!monthlyinterval}" onblur="document.getElementById('{!$Component.myHiddenVar4}').value = this.value;"/><label for="recmm1"></label>
+                                            On the <select id="mnins" name="mnins" onchange="document.getElementById('recmm1').checked=true;" title="select which week of the month" value="{!whichweek}" onblur="document.getElementById('{!$Component.myHiddenVar6}').value = this.value;"> 
+                                                <option value="1" selected="selected">1st</option> 
+                                                <option value="2">2nd</option> 
+                                                <option value="3">3rd</option> 
+                                                <option value="4">4th</option> 
+                                                <option value="5">last</option> 
+                                            </select>
+                                            <apex:inputHidden value="{!whichday}" id="myHiddenVar5" />   
+                                            <select id="mndow" name="mndow" onchange="document.getElementById('recmm1').checked=true;" title="select which day of the week" value="{!whichday}" onblur="document.getElementById('{!$Component.myHiddenVar5}').value = this.value;">
+                                                <option value="127" selected="selected">day</option> 
+                                                <option value="1">Sunday</option> 
+                                                <option value="2">Monday</option> 
+                                                <option value="4">Tuesday</option> 
+                                                <option value="8">Wednesday</option> 
+                                                <option value="16">Thursday</option> 
+                                                <option value="32">Friday</option> 
+                                                <option value="64">Saturday</option>
+                                            <apex:inputHidden value="{!timeinterval}" id="myHiddenVar7" />  
+                                            </select> 
+                                            of every <input id="mnint" name="mnint" onkeypress="document.getElementById('recmm1').checked=true;" size="3" title="specify interval in months" type="text" value="{!timeinterval}" onblur="document.getElementById('{!$Component.myHiddenVar7}').value = this.value;"/> 
+                                            month(s)
+                                            </div> 
+                                            </div> 
+                                            <div id="y" style="display: none;"> 
+                                            <div>
+                                            <apex:inputHidden value="{!month}" id="myHiddenvar8" /> 
+                                            <input checked="checked" id="recyy0" name="recy" title="Specify month and day" type="radio" value="y0"/><label for="recyy0"></label>
+                                            On every <select id="ymoy" name="ymoy" onchange="document.getElementById('recyy0').checked=true;" title="select the month" value="{!month}" onblur="document.getElementById('{!$Component.myHiddenvar8}').value = this.value;"> 
+                                                <option value="0">January</option> 
+                                                <option value="1">February</option> 
+                                                <option value="2">March</option> 
+                                                <option value="3">April</option> 
+                                                <option value="4">May</option> 
+                                                <option value="5">June</option> 
+                                                <option value="6">July</option> 
+                                                <option value="7">August</option> 
+                                                <option value="8" selected="selected">September</option> 
+                                                <option value="9">October</option> 
+                                                <option value="10">November</option> 
+                                                <option value="11">December</option> 
+                                            </select> 
+                                             <apex:inputHidden value="{!dayofmonth}" id="myHiddenVar9" /> 
+                                            <select id="ydom" name="ydom" onchange="document.getElementById('recyy0').checked=true;" title="select day of the month" onblur="document.getElementById('{!$Component.myHiddenVar9}').value = this.value;">
+                                                <option value="1" selected="selected">1</option> 
+                                                <option value="2">2</option> 
+                                                <option value="3">3</option> 
+                                                <option value="4">4</option> 
+                                                <option value="5">5</option> 
+                                                <option value="6">6</option> 
+                                                <option value="7">7</option> 
+                                                <option value="8">8</option> 
+                                                <option value="9">9</option>
+                                                <option value="10">10</option> 
+                                                <option value="11">11</option> 
+                                                <option value="12">12</option> 
+                                                <option value="13">13</option> 
+                                                <option value="14">14</option> 
+                                                <option value="15">15</option> 
+                                                <option value="16">16</option> 
+                                                <option value="17">17</option>
+                                                <option value="18">18</option> 
+                                                <option value="19">19</option> 
+                                                <option value="20">20</option> 
+                                                <option value="21">21</option> 
+                                                <option value="22">22</option> 
+                                                <option value="23">23</option> 
+                                                <option value="24">24</option> 
+                                                <option value="25">25</option> 
+                                                <option value="26">26</option> 
+                                                <option value="27">27</option> 
+                                                <option value="28">28</option> 
+                                                <option value="29">29</option> 
+                                                <option value="30">30</option> 
+                                                <option value="31">31</option> 
+                                                
+                                            </select>
+                                            </div>
+                                            <div>
+                                            <input id="recyy1" name="recy" title="Specify day of particular week in a specific month" type="radio" value="y1"/>
+                                            <label for="recyy1"></label>
+                                            <apex:inputHidden value="{!whichweekofthemonth}" id="myHiddenVar10" />
+                                            On the <select id="ynins" name="ynins" onchange="document.getElementById('recyy1').checked=true;" title="select which week of the month" onblur="document.getElementById('{!$Component.myHiddenVar10}').value = this.value;"> 
+                                                <option value="1" selected="selected">1st</option> 
+                                                <option value="2">2nd</option> 
+                                                <option value="3">3rd</option> 
+                                                <option value="4">4th</option> 
+                                                <option value="5">last</option> 
+                                            </select> 
+     <apex:inputHidden value="{!whichdayoftheweek}" id="myHiddenVar11" /> 
+                                            <select id="yndow" name="yndow" onchange="document.getElementById('recyy1').checked=true;" title="select which day of the week" value="{!whichdayoftheweek}" onblur="document.getElementById('{!$Component.myHiddenVar11}').value = this.value;"> 
+                                                <option value="127" selected="selected">day</option> 
+                                                <option value="1">Sunday</option> 
+                                                <option value="2">Monday</option> 
+                                                <option value="4">Tuesday</option> 
+                                                <option value="8">Wednesday</option> 
+                                                <option value="16">Thursday</option> 
+                                                <option value="32">Friday</option> 
+                                                <option value="64">Saturday</option>
+                                            </select> 
+     <apex:inputHidden value="{!themonth}" id="myHiddenVar12" />
+                                            of <select id="ynmoy" name="ynmoy" onchange="document.getElementById('recyy1').checked=true;" title="select the month" value="{!themonth}" onblur="document.getElementById('{!$Component.myHiddenVar12}').value = this.value;"> 
+                                                <option value="0">January</option> 
+                                                <option value="1">February</option> 
+                                                <option value="2">March</option> 
+                                                <option value="3">April</option> 
+                                                <option value="4">May</option> 
+                                                <option value="5">June</option> 
+                                                <option value="6">July</option> 
+                                                <option value="7">August</option> 
+                                                <option value="8">September</option> 
+                                                <option value="9">October</option> 
+                                                <option value="10" selected="selected">November</option> 
+                                                <option value="11">December</option> 
+                                            </select> 
+                                            </div> 
+                                            </div>
+                                            </td>
+                                            </tr>
+                                            </tbody> 
+                                            </table>
+                                            </td>
+                                            </tr> 
+                                            <tr>  
+                                            <td class="labelCol requiredInput"> 
+                                            <label for="RecurrenceStartDateOnly">Start Date</label> 
+                                            </td> 
+                                            <td class="data2Col col02"> 
+                                            <div class="requiredInput"> 
+                                            <div class="requiredBlock"></div> 
+                                            <span class="dateInput dateOnlyInput">
+                                            <apex:inputHidden value="{!RecurrenceStartDateOnly}" id="myHiddenVar13"/>
+                                            <input id="RecurrenceStartDateOnly" name="RecurrenceStartDateOnly" onfocus="DatePicker.pickDate(true, 'RecurrenceStartDateOnly', false);" size="12" type="text" value="{!RecurrenceStartDateOnly}" onblur="document.getElementById('{!$Component.myHiddenVar13}').value = this.value;"/> 
+                                            <span class="dateFormat">
+                                            [
+                                            <!-- <a href="javascript:void(0);DatePicker.datePicker.insertDate('today', 'RecurrenceStartDateOnly', true);">today</a> -->
+                                            <a href="javascript:void(0);" class="calToday" onclick="DatePicker.pickDate(true, 'RecurrenceStartDateOnly', false); DatePicker.datePicker.selectDate('today', 'RecurrenceStartDateOnly', true);return true;">Today</a>
+                                            ]
+                                            </span>
+                                            </span> 
+                                            </div> 
+                                            </td> 
+                                            </tr>  
+                                            <tr> <td class="labelCol requiredInput"> 
+                                            <label for="RecurrenceEndDateOnly">End Date</label> 
+                                            </td> 
+                                            <td class="data2Col col02"> 
+                                            <div class="requiredInput"> 
+                                            <div class="requiredBlock">
+                                            </div> 
+                                            <span class="dateInput dateOnlyInput"> 
+                                            <apex:inputHidden value="{!RecurrenceEndDateOnly}" id="myHiddenVar14"/>
+                                            <input id="RecurrenceEndDateOnly" name="RecurrenceEndDateOnly" onfocus="DatePicker.pickDate(false, 'RecurrenceEndDateOnly', false);" size="12" type="text" value="{!RecurrenceEndDateOnly}" onblur="document.getElementById('{!$Component.myHiddenVar14}').value = this.value;"/> 
+                                            <span id="maxRecurrence"> 
+                                            <span class="dateFormat">[<a href="javascript:void(0);DatePicker.insertDate(, 'RecurrenceEndDateOnly', true);">Calculate max end date</a>]</span> 
+                                            <div class="mouseOverInfoOuter" onfocus="addMouseOver(this)" onmouseover="addMouseOver(this)" tabindex="0">
+                                            <img src="/s.gif" alt="" class="infoIcon" title=""/> 
+                                            <div class="mouseOverInfo" style="display: none; left: 20px; opacity: -0.19999999999999996;">
+                                            You must specify an end date for recurring tasks. Click the link to calculate the maximum end date allowed based on the frequency you selected and to set the end date to this maximum. 
+                                            </div> 
+                                            </div> 
+                                            </span> 
+                                            </span> 
+                                            </div> 
+                                            </td> 
+                                            </tr>
+                                            </tbody>
+                                            </table>
+                                            </div>
+                                            </td>
+                                            </tr>
+                                            </tbody>
+                                            </table>
+                                            </div>
+                                            </apex:actionRegion>
+                                            </apex:pageBlockSection>
+<script>
+    document.getElementById("rectypeftd").value="RecursDaily";
+    document.getElementById("rectypeftw").value="RecursWeekly";
+    document.getElementById("rectypeftm").value="RecursMonthlyvalue";
+    document.getElementById("rectypefty").value="RecursYearly";
+    function radiobut()
+    { 
+        if(document.getElementById('rectypeftd').checked==true)
+        { 
+            document.getElementById('d').style.display='block'; 
+            document.getElementById('w').style.display='none'; 
+            document.getElementById('m').style.display='none' ;
+            document.getElementById('y').style.display='none' ;
+        } 
+        else if(document.getElementById('rectypeftw').checked==true)
+        { 
+            document.getElementById('d').style.display='none'; 
+            document.getElementById('w').style.display='block'; 
+            document.getElementById('m').style.display='none' ;
+            document.getElementById('y').style.display='none' ;
+        } 
+        else if(document.getElementById('rectypeftm').checked)
+        { 
+            document.getElementById('d').style.display='none'; 
+            document.getElementById('w').style.display='none'; 
+            document.getElementById('m').style.display='block' 
+            document.getElementById('y').style.display='none' ;
+        } 
+        else if (document.getElementById('rectypefty').checked)
+        { 
+            document.getElementById('d').style.display='none'; 
+            document.getElementById('w').style.display='none'; 
+            document.getElementById('m').style.display='none' ;
+            document.getElementById('y').style.display='block' ;
+        }
+   }
+    function ManageDiv(Sch)
+    {
+        if(document.getElementById(Sch).checked)
+        { 
+            document.getElementById('recpat').style.display='block';
+        }
+        else
+        {
+            document.getElementById('recpat').style.display='none';
+        } 
+    }
+</script>
+<!------------------------------------------------------------------------------------------------------------------>      
+       
+            <apex:pageblockSection title="Account Hierarchy" columns="1" collapsible="false" id="taskRTPBS">
+               <apex:pageBlockSectionItem >
+                    <apex:outputPanel id="gridOP">
+                        <apex:outputPanel layout="block" rendered="true">
+                            <script>
+                                j$(document).ready(function(){
+                                    var topicjson = {"response": {!strJSONGrid}};
+                                    j$('<table id="list2"></table>').appendTo('#AccGrid');
+                                    j$("#list2").jqGrid({
+                                        datastr: topicjson,
+                                        datatype: "jsonstring",
+                                        height: "auto",
+                                        loadui: "disable",
+                                        colNames:['Id','Account','Enabled'],
+                                        colModel:[
+                                            {name:'id',index:'id',width:1,hidden:true,key:true},
+                                            {name:'strAccName',index:'strAccName',width:80},
+                                            {name:'enabled',index:'enabled',formatter:"checkbox",formatoptions:{disabled :false},editable:true,edittype:"checkbox",width:20,align:'center'}
+                                        ],
+                                        rowNum:10,
+                                        viewrecords: true,
+                                        sortorder: 'desc',
+                                        height: 'auto',
+                                        caption: 'Related Accounts',
+                                        treeGrid: true,
+                                     treeGridModel: 'adjacency',
+                                        ExpandColumn : 'strAccName',
+                                        autowidth:true,
+                                        multiselect: true,
+                                        treeIcons: {leaf:'ui-icon-document-b'},
+                                        jsonReader: {
+                                            repeatitems: false,
+                                            root: "response"
+                                        }    
+                                    });   
+                                    j$("#list2").trigger("reloadGrid");
+                                    j$("#selectAll").click(function(){
+                                        var rowIds = j$("#list2").jqGrid('getDataIDs');
+                                        j$.each(rowIds, function (i, row) {
+                                            var rowData = j$("#list2").getRowData(row);
+                                            rowData.enabled = true;
+                                            j$('#list2').jqGrid('setRowData', row, rowData);
+                                        });
+                                    });
+    
+                                    j$("#clear").click(function(){
+                                        var rowIds = j$("#list2").jqGrid('getDataIDs');
+                                        j$.each(rowIds, function (i, row) {
+                                            var rowData = j$("#list2").getRowData(row);
+                                            rowData.enabled = false;
+                                            j$('#list2').jqGrid('setRowData', row, rowData);
+                                        });
+
+                                    });
+                                });
+                            </script>
+                            
+                            <input id="selectAll" type="button" value="Select All"/>
+                            <input id="clear" type="button" value="Clear All"/>
+                            
+                            <table id="AccGrid"/>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+            </apex:pageblockSection>
+            </apex:outputpanel>
+
+        </apex:pageblock>
+    </apex:form>    
+</apex:page>

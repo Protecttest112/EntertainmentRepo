@@ -1,0 +1,9 @@
+<apex:page controller="batchtestcontroller">
+ 
+ <apex:form >
+ <apex:inputText value="{!userDate}"/>
+ <apex:commandButton title="b1" value="Test" action="{!sendEmail}" />
+
+ </apex:form>
+ 
+</apex:page>

@@ -1,0 +1,23 @@
+<apex:page sidebar="false">
+<html ng-app="httpApp1">
+<head>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"/>
+</head>
+<div ng-controller="customersController">
+{{names}}
+<li ng-repeat="x in names">
+{{x.Name}}
+</li>
+</div>
+<script>
+var myapp=angular.module('httpApp1',[]);
+
+function customersController($scope,$http) {
+  $http.get("https://www.w3schools.com//website/Customers_JSON.php")
+  .success(function(response) {
+  $scope.names = response;});
+}
+</script>
+</html>
+</apex:page>

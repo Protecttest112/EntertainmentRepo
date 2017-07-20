@@ -1,0 +1,62 @@
+<apex:page sidebar="false">
+<html ng-app="myApp">
+<head>
+<script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+</head>
+<br/> <br/>
+<strong>AngularJS Modules </strong>
+<br/> <br/>
+<div ng-controller="con1">
+Name1: <input type="text" ng-model="f1"/>
+Name2: <input type="text" ng-model="f2"/> <br/><br/>
+{{f1+":-"+f2}}
+</div>
+<br/> <br/>
+<div ng-controller="con2">
+<strong>AngularJS Forms </strong>
+<br/> <br/>
+Name1:- <input type="text" ng-model="user.fname"/>
+Name2:- <input type="text" ng-model="user.lname"/>
+<button ng-click="reset()">RESET </button>
+<br/><br/>
+{{user}}
+<br/><br/>
+{{master}}
+</div>
+
+<br/> <br/>
+<strong>AngularJS Validation</strong>
+<br/> <br/>
+
+<form ng-controller="validateCon1" name="myform" novalidate="true">
+<p>UserName:
+<input type="text" name="user" ng-model="user" required="true"/>
+{{myform.user.$dirty}}
+{{myform.user.$invalid}}
+<span style="color:red" ng-show="myform.user.$dirty && myform.user.$invalid">
+<span ng-show="myform.user.$error.required">Username is required.</span>
+</span>
+</p>
+<button ng-disabled="myform.user.$dirty && myform.user.$invalid">Submit</button>
+</form>
+<script>
+var app= angular.module("myApp",[]);
+app.controller("con1",function($scope){
+$scope.f1="Fname";
+$scope.f2="Lname";
+});
+
+function con2($scope){
+$scope.master={fname:'abc1',lname:'def'};
+$scope.reset=function(){
+$scope.user=angular.copy($scope.master);
+};
+$scope.reset();
+}
+
+function validateCon1($scope){
+ $scope.user = 'John Doe';
+}
+</script>
+</html>
+</apex:page>

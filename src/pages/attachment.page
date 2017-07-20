@@ -1,0 +1,62 @@
+<apex:page standardController="Account" extensions="MultipleUploadController" showHeader="false">  
+    <apex:includeScript value="//code.jquery.com/jquery-1.9.1.js"/>
+    <apex:includeScript value="//code.jquery.com/ui/1.10.3/jquery-ui.js"/>   
+    <apex:pageBlock id="pageblocks" title="Upload Multiple Attachment to Object">  
+
+                <input type="file" id="fileToUpload" multiple="true" />
+                 <button onclick="file()" oncomplete="listView()">Upload Document</button>&nbsp;
+                 <br/>
+        <apex:form >  
+        <apex:pageMessages id="MSG"/>  
+        <br />
+        <apex:actionFunction name="listView" action="{!listView}" reRender="mainBlock"/>         
+        <apex:actionFunction name="SaveAttachments" action="{!SaveAttachments}">
+        <apex:param name="a" value="" assignTo="{!stringFileName}"/>
+        <apex:param name="b" value="" assignTo="{!stringFileType}"/>
+        <apex:param name="c" value="" assignTo="{!stringFileSize}"/>
+       <!-- <apex:param name="c" value="" assignTo="{!stringFileBody}"/> -->
+       </apex:actionFunction>
+       <apex:pageBlockSection title="Select Files"/> 
+        <apex:pageBlockTable id="mainBlock" value="{!viewList}" var="a">   
+       <apex:column headerValue="Name" value="{!a.Name}">
+       </apex:column>
+       <apex:column headerValue="Size" value="{!a.BodyLength}">
+       </apex:column>
+       <apex:column headerValue="UploadedDate" value="{!a.CreatedDate}">
+       </apex:column>
+       <apex:column headerValue="UploadedBy" value="{!a.CreatedBy.Name}">
+       </apex:column>
+       </apex:pageBlockTable> 
+       </apex:form> 
+        </apex:pageBlock> 
+    <script type="text/javascript" src="{!URLFOR($Resource.uploadDoc,'uploadDoc/js/config.js')}"></script>    
+    <script type="text/javascript" src="{!URLFOR($Resource.uploadDoc,'uploadDoc/js/UploadDocument.js')}"></script>
+    <script type="text/javascript" src="{!URLFOR($Resource.uploadDoc,'uploadDoc/js/aws-sdk-2.0.0-rc11.min.js')}"></script>
+  
+    <script type="text/Javascript">
+    
+    function init(){
+    ListFileType=[];
+    ListFileName=[];
+    ListFileSize=[];
+    ListFileBody=[];
+    no_of_files=0;
+    var attachment;
+    }
+    function file(){
+    init();
+    var queryList = jQuery('#fileToUpload')[0].files;
+    var queryList1 = jQuery('#fileToUpload')[0].files[1];
+    console.log(queryList);
+    for (var i=0;i<queryList.length;i++){
+    ListFileName.push(queryList[i].name);
+   // ListFileBody.push(queryList[i].name));
+    ListFileSize.push(queryList[i].size);
+    ListFileType.push(queryList[i].type);
+    SaveAttachments(ListFileName[i],ListFileName[i],ListFileSize[i]);
+    alert('hi');
+    alert(queryList1);
+    }
+    }
+    </script>
+ </apex:page>

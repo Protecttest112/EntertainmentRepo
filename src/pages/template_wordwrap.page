@@ -1,0 +1,56 @@
+<apex:page standardController="Account" extensions="MassEditControllerNew" recordSetVar="unused" sidebar="false" standardStylesheets="false">
+ <style>
+       
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+<apex:form >
+<apex:pageBlock >
+<apex:pageMessages />
+<apex:pageBlock >
+Note: All modifications made on the page will be lost if Return button is clicked without clicking the Save button first. 
+</apex:pageBlock>
+<apex:pageBlockTable value="{!a1}" var="a" id="table">
+<apex:column headerValue="Namn" >
+<apex:outputText value="{!a.Name}"/>
+</apex:column>
+<apex:column headerValue="Externt ID">
+<apex:inputText value="{!a.Phone}"/>
+</apex:column>
+<apex:column headerValue="Område">
+<apex:inputField value="{!a.Rating}"/>
+</apex:column>
+<apex:column headerValue="Ägare">
+<apex:outputText value="{!a.Owner.Name}" />
+</apex:column>
+<apex:column headerValue="Namn">
+<apex:outputText value="{!a.Name}"/>
+</apex:column>
+<apex:column headerValue="Externt ID">
+<apex:inputText value="{!a.Phone}"/>
+</apex:column>
+<apex:column headerValue="Område">
+<apex:inputField value="{!a.Rating}"/>
+</apex:column>
+<apex:column headerValue="Ägare">
+<apex:outputText value="{!a.Owner.Name}" />
+</apex:column>
+<apex:column headerValue="Namn" >
+<apex:outputText value="{!a.Name}"/>
+</apex:column>
+<apex:column headerValue="Externt ID">
+<apex:inputText value="{!a.Phone}"/>
+</apex:column>
+<apex:column headerValue="Område">
+<apex:inputField value="{!a.Rating}"/>
+</apex:column>
+<apex:column headerValue="Ägare">
+<apex:outputText value="{!a.Owner.Name}" />
+</apex:column>
+
+</apex:pageBlockTable>
+</apex:pageBlock>
+</apex:form>
+<script>$(document).ready(function(){
+$("[id$='id38header:sortDiv']").css('width','60px');
+});</script>    
+</apex:page>

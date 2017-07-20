@@ -1,0 +1,30 @@
+<apex:page controller="DynamicBindingDML" showHeader="false" sidebar="false">  
+  <apex:pageMessages id="msgs" /> 
+   <apex:form >  
+   {!$User.UITheme}
+   {!$User.UIThemeDisplayed}
+  <apex:pageMessages /> 
+  <apex:pageBlock title="Your Custom Objects ONLY ">  
+    <apex:selectList value="{!sCustomObjSelected}" size="1">
+      <apex:selectOptions value="{!CustomObjects}"/>
+    </apex:selectList>   
+    <apex:commandButton value="Get Fields Only:" reRender="fields" 
+        action="{!RefreshsObjFields}" />
+    <apex:commandButton value="Get Fields and Data:" reRender="fields,msgs"
+       onclick="onComleteAffterSave()"/>
+  </apex:pageBlock>   
+   
+  <apex:pageBlock title="Custom Object Fields and Data" id="fields">    
+    <apex:pageBlockSection title="Dynamic Object">  
+      <apex:repeat value="{!listObjectFields}" var="fieldAPIName">  
+        <apex:outputField value="{!sObjectToBind[fieldAPIName]}"/> 
+      </apex:repeat>  
+    </apex:pageBlockSection> 
+  </apex:pageBlock>         
+ </apex:form>  
+    <script>
+    function onComleteAffterSave(){
+        sforce.one.navigateToURL('/DealPage',true); 
+}
+</script>   
+</apex:page>

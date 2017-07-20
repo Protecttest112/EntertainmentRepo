@@ -1,0 +1,72 @@
+<aura:component controller="ExpensesController">
+<aura:handler name="init" action="{!c.doinit}" value="{!this}"/>
+   
+    <aura:attribute name="expenses" type="Expense__c[]" />
+    
+    <!-- List of Old Expenses-->
+        <div class="slds-col slds-col--padded slds-p-top--large">
+          
+  <div aria-labelledby="newexpenseform">
+
+  <!-- BOXED AREA -->
+  <fieldset class="slds-box slds-theme--default slds-container--small">
+
+    <legend id="newexpenseform" class="slds-text-heading--small 
+      slds-p-vertical--medium">
+      List of Expense
+    </legend>
+
+    <!-- CREATE NEW EXPENSE FORM -->
+	<aura:iteration items="{!v.expenses}" var="v">
+    <form class="slds-form--stacked">
+
+      <div class="slds-form-element slds-is-required">
+          <div class="slds-form-element__control">
+             Expense Name:- <ui:outputText aura:id="expname_output" 
+                  class="slds-input"
+                  value="{!v.Name}"/>
+          </div>
+     </div>
+
+     <div class="slds-form-element slds-is-required">
+          <div class="slds-form-element__control">
+             Amount:- <ui:outputNumber aura:id="amount_output" 
+                  class="slds-input"
+                  value="{!v.Amount__c}"/>
+
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          <div class="slds-form-element__control">
+             Client:- <ui:outputText aura:id="client_output" 
+                  class="slds-input"
+                  value="{!v.Client__c}"/>
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          <div class="slds-form-element__control">
+              Expense Date<ui:outputDate aura:id="expdate_output"
+                  class="slds-input"
+                  value="{!v.Date__c}"/>
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          Reimbursed: <ui:outputCheckbox aura:id="reimbursed_output"
+              class="slds-checkbox"
+              value="{!v.Reimbursed__c}"/>
+      </div>
+        <br/>
+        <hr style="color:RED"/>
+     </form>
+		</aura:iteration>
+    <!-- / CREATE NEW EXPENSE FORM -->
+
+  </fieldset>
+  <!-- / BOXED AREA -->
+
+</div> 
+    </div>
+</aura:component>

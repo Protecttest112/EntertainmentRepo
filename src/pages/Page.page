@@ -1,0 +1,847 @@
+<apex:page sidebar="false" controller="MCPM_WalkSectorsTab_Controller" docType="html-5.0" language="en-US" title="Walk cards">
+    <html lang="en">
+        <head>
+            
+            <!--adding viewport meta tag, to ensure proper rendering and touch zooming-->
+            <meta charset="utf-8"></meta>
+            <meta http-equiv="X-UA-Compatible" content="IE=edge"></meta>
+            <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no"></meta>
+            <title>Walk cards</title>
+            
+            <!--page specific style-->
+            <style>
+                a { cursor: pointer; }
+                ul li, ol li { margin-left: 0px; padding-left: 0px; }
+                thead { background: #f0f0f0;}
+                table { border: 2px solid #ddd; background: white; }
+                .saving { opacity: .5; }
+                .ng-cloak { display: none !important; }
+                .cursor-move { cursor: move; }
+                .cursor-pointer { cursor:pointer; }
+            </style>
+            
+            <!--adding CSS-->
+<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" />
+        </head>
+        <body>
+            <apex:sectionHeader title="Virgin Media" subtitle="Walk sectors"/>
+            <!-- NPC:9707 -->
+            <div style="color:#FF0099;font-size:15px;font-weight: bold" align="center">
+                <apex:outPutText value="You have logged in As {!loggedinUser}" rendered="{!OR(rsmtoRsmView,rsmtoFsmView)}"/>
+            </div>
+            <!-- NPC:9707 -->
+            <div class="bs ng-cloak" ng-app="walksectors" style="padding: 20px;">
+                <div ng-controller="walksectors-ctrl">
+                    <button type="button" class="btn btn-default btn-xs pull-right" style="margin-top: -50px;" ng-show="walkStartDate">Period start date: {{walkStartDate}}</button>
+                    <div class="row">
+                        <div class="form-group col-md-3" ng-hide="isRSM" >
+                            <input class="form-control input-sm" id="searchText" placeholder="Search walk sectors" style="width:50%" ng-model="searchText" ng-change="walksector()" />
+                        </div>
+                        <div class="form-group col-md-3" style="margin-top: 10px; margin-bottom: 20px;" ng-show="isRSM" >
+                            <div>
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showCurrent=true;showFuture=false;showAll=false;walksector();">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showCurrent, 'glyphicon-unchecked' : !showCurrent}"/> Show current
+                                </span>
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showFuture=true;showCurrent=false;showAll=false;walksector()">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showFuture, 'glyphicon-unchecked' : !showFuture}"/> Show future
+                                </span>
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showAll=true;showCurrent=false;showFuture=false;walksector()">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showAll, 'glyphicon-unchecked' : !showAll}"/> Show all
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-5">
+                            <!--NPC:9707-->                         
+                            <div class="btn-group">
+                              <button  ng-hide="{!OR(Not(bIsRSM),rsmtoFsmView,rsmtoRsmView)}" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: #6f5499; color: #ffffff">
+                                FSM View <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a ng-click="reassignFSMView()"><span class="glyphicon glyphicon-pencil"/> Click Here To Select FSM</a></li>
+                              </ul>
+                            </div>
+                            <!-- NPC:9707 -->
+                            <!-- NPC:9707 -->
+                            <div class="btn-group">
+                              <button  ng-hide="{!OR(bIsRSM,rsmtoFsmView,rsmtoRsmView)}" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: #6f5499; color: #ffffff">
+                                FSM View <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a ng-click="switchToFSMView()"><span class="glyphicon glyphicon-pencil"/> Click Here To Select FSM</a></li>
+                              </ul>
+                            </div>
+                            <div class="btn-group">
+                              <button ng-hide="{!OR(Not(bIsRSM),rsmtoRsmView)}" type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" style="background: #6f5499; color: #ffffff">
+                                RSM View <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li><a ng-click="reassignRSMView()"><span class="glyphicon glyphicon-pencil"/> Click Here To Select RSM</a></li>
+                              </ul>
+                            </div>
+                            <!-- NPC:9707 -->
+                            <!-- Action button -->
+                            <div class="btn-group">
+                              <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="selectedSectors.length == 0" aria-haspopup="true" aria-expanded="false" style="background: #6f5499; color: #ffffff">
+                                <span class="badge">{{selectedSectors.length}}</span> Selected <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li ng-hide="isFSM"><a ng-click="reassignFSM()"><span class="glyphicon glyphicon-pencil"/> Update FSM</a></li>
+                                <li ng-hide="isRSM || showFuture"><a ng-click="reassignRep(true)"><span class="glyphicon glyphicon-pencil"/> Update rep (current)</a></li>
+                                <li ng-hide="isRSM || showCurrent"><a ng-click="reassignRep(false)"><span class="glyphicon glyphicon-pencil"/> Update rep (future)</a></li>
+                                <li ng-hide="isRSM"><a ng-click="assignPostcode()"><span class="glyphicon glyphicon-pencil"/> Assign postcodes</a></li>
+                                <li role="separator" class="divider"></li>
+                                <li><a ng-click="selectedSectors=[];walksector()"><span class="glyphicon glyphicon-refresh"/> Reset</a></li>
+                              </ul>
+                            </div>
+                            <!-- Walk postcode- Modal -->
+                            <div class="modal fade" id="walkpostcodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog modal-lg" style="width: 1000px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-map-marker" style="font-size:16px;"/> &nbsp;Walk postcodes in selected sectors
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <div style="padding-bottom: 40px">
+                                      <div class="pull-left" >
+                                        <input class="form-control input-sm" id="searchTextPostcode" placeholder="Search walk postcode" style="width:100%" ng-model="searchTextPostcode" />
+                                      </div>
+                                      <div class="pull-right" >
+                                        <!-- Action button -->
+                                        <div class="btn-group">
+                                          <button type="button" class="btn btn-sm dropdown-toggle" data-toggle="dropdown" ng-disabled="selectedPostcodes.length == 0" aria-haspopup="true" aria-expanded="false" style="background: #6f5499; color: #ffffff">
+                                            <span class="badge">{{selectedPostcodes.length}}</span> Selected <span class="caret"></span>
+                                          </button>
+                                          <ul class="dropdown-menu">
+                                            <li ng-hide="showFuture"><a ng-click="reassignPostcodeRep(true)"><span class="glyphicon glyphicon-pencil"/> Update rep (current)</a></li>
+                                            <li ng-hide="showCurrent"><a ng-click="reassignPostcodeRep(false)"><span class="glyphicon glyphicon-pencil"/> Update rep (future)</a></li>
+                                            <li role="separator" class="divider"></li>
+                                            <li><a ng-click="selectedPostcodes=[];walkpostcode()"><span class="glyphicon glyphicon-refresh"/> Reset</a></li>
+                                          </ul>
+                                        </div>
+                                        <button type="button" class="btn btn-info  btn-sm" data-toggle="modal" ng-click="forSectors = true; agentsInfo();" data-target="#assignments">Assignments</button>
+                                        <button type="button" class="btn btn-success  btn-sm" data-toggle="modal" data-target="#autoAssign" ng-hide="isRSM">Auto assign</button>
+                                      </div>
+                                    </div>
+                                    <div ng-hide="loadedPostcode || alertsPostcode">
+                                      <div >
+                                        <img class="center-block" src="/s.gif" border="0" />
+                                      </div>
+                                    </div>
+                                    <div ng-show="alertsPostcode">
+                                      <div >
+                                        <alert class="alert-dismissible" ng-repeat="alert in alertsPostcode" type="{{alert.type}}" >{{alert.msg}}</alert>
+                                      </div>
+                                    </div>
+                                    <div ng-show="walkpostcodeData">
+                                      <div >
+                                        <table class="table table-condensed table-hover" style="margin-bottom: 0px;">
+                                          <thead>
+                                            <tr>
+                                              <th>
+                                                <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;cursor: pointer;" ng-class="{'glyphicon-check' : selectAllPostcode, 'glyphicon-unchecked' : !selectAllPostcode}" ng-click="selectAllPostcode = !selectAllPostcode;selectActionPostcode();"/>
+                                                <a ng-click="changeSortPostcode('MCPM_Postcode_Sort__c')">Walk postcode <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Postcode_Sort__c'"/></a>
+                                              </th>
+                                              <th><a ng-click="changeSortPostcode('MCPM_Walk_Sector__r.Name')">Walk sector <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Walk_Sector__r.Name'"/></a></th>
+                                              <th><a ng-click="changeSortPostcode('MCPM_Number_Of_Premises__c')">Number of premises <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Number_Of_Premises__c'"/></a></th>
+                                              <th><a ng-click="changeSortPostcode('Owner.Name')">FSM <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='Owner.Name'"/></a></th>
+                                              <th ng-hide="showFuture"><a ng-click="changeSortPostcode('MCPM_Rep__r.Name')">Current rep <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Rep__r.Name'"/></a></th>
+                                              <th ng-hide="showCurrent"><a ng-click="changeSortPostcode('MCPM_Future_Rep__r.Name')">Future rep <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Future_Rep__r.Name'"/></a></th>
+                                              <th ng-hide="showFuture"><a ng-click="changeSortPostcode('MCPM_Current_State__c')">Current <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Current_State__c'"/></a></th>
+                                              <th ng-hide="showCurrent"><a ng-click="changeSortPostcode('MCPM_Future_State__c')">Future <span ng-class="{'glyphicon-sort-by-alphabet' : !reversePostcode,'glyphicon-sort-by-alphabet-alt' : reversePostcode}" class="glyphicon"  ng-show="sortPostcode=='MCPM_Future_State__c'"/></a></th>
+                                            </tr>
+                                          </thead>
+                                            <tr ng-repeat="walkpostcode in filteredwalkpostcodeData" ng-class="{'saving' : walkpostcode.fade}" >
+                                              <td style="vertical-align: middle; cursor: pointer;" ng-click="walkpostcode.select = !walkpostcode.select;selectPostcode($index);">
+                                                <span>
+                                                  <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;" ng-class="{'glyphicon-check' : walkpostcode.select, 'glyphicon-unchecked' : !walkpostcode.select}"/> {{walkpostcode.Name}}
+                                                </span>
+                                              </td>
+                                              <td style="vertical-align: middle;">
+                                                {{walkpostcode.MCPM_Walk_Sector__r.Name}}
+                                              </td>
+                                              <td style="vertical-align: middle;">
+                                                {{walkpostcode.MCPM_Number_Of_Premises__c}}
+                                              </td>
+                                              <td style="vertical-align: middle;">
+                                                {{walkpostcode.Owner.Name}}
+                                              </td>
+                                              <td ng-hide="showFuture" style="vertical-align: middle;">
+                                                <select id="MCPM_Rep__c" ng-model="walkpostcode.MCPM_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                                  class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="savePostcode($index)" >
+                                                </select>
+                                              </td>
+                                              <td ng-hide="showCurrent" style="vertical-align: middle;">
+                                                <select id="MCPM_Future_Rep__c" ng-model="walkpostcode.MCPM_Future_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                                  class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="savePostcode($index)" >
+                                                </select>
+                                              </td>
+                                              <td ng-hide="showFuture" style="vertical-align: middle;">
+                                                <div style="font-size: 17px;" class="glyphicon" ng-class="{'glyphicon-ok' : walkpostcode.MCPM_Current_State__c, 'glyphicon-remove' : !walkpostcode.MCPM_Current_State__c}"/>
+                                              </td>
+                                              <td ng-hide="showCurrent" style="vertical-align: middle;">
+                                                <div style="font-size: 17px;" class="glyphicon" ng-class="{'glyphicon-ok' : walkpostcode.MCPM_Future_State__c, 'glyphicon-remove' : !walkpostcode.MCPM_Future_State__c}"/>
+                                              </td>
+                                            </tr>
+                                          </table>
+                                        </div>
+                                    </div>
+                                    <div ng-hide="!loadedPostcode || walkpostcodeData">
+                                        <div>
+                                            No walk postcodes match your search.
+                                        </div>
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer" ng-show="walkpostcodeData" style="height: 60px;">
+                                    <pagination style="margin: 0px 0;" class="pagination-sm pull-left" total-items="totalItemsPostcode" items-per-page="itemsPerPage" ng-model="currentPagePostcode" 
+                                        max-size="10" ng-show="walkpostcodeData && (walkpostcodeData.length>15)" rotate="false" previous-text="<" next-text=">"></pagination>
+                                    <button type="button" class="btn btn-default btn-xs pull-right" >Total: {{totalItemsPostcode==500?totalItemsPostcode + '+':totalItemsPostcode}}</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Assignment- Modal -->
+                            <div class="modal fade" id="assignments" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 50px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-blackboard" style="font-size:16px;"/> &nbsp;Assignment dashboard
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                     <div class="btn-group pull-right">
+                                        <label class="btn" ng-model="showAssignments" btn-radio="'current'" ng-click="showAssignments='current';agentsInfo();">Current</label>
+                                        <label class="btn" ng-model="showAssignments" btn-radio="'future'" ng-click="showAssignments='future';agentsInfo()">Future</label>
+                                     </div>
+                                     <br/>Showing {{showAssignments}} assignments.<br/><br/><br/>
+                                     <div>
+                                        <div class="row" ng-hide="!dialogLoaded || agents">
+                                            <div class="form-group col-md-12" >
+                                                No assignments made.
+                                            </div>
+                                        </div>
+                                        <div class="row" ng-hide="dialogLoaded">
+                                            <img class="center-block" src="/s.gif" border="0" />
+                                        </div>
+                                        <ul class="list-group" style="max-height: 300px; overflow-y: auto;">
+                                          <li ng-repeat="agent in agents" class="list-group-item" style="margin-left: 0px;">
+                                            <img src="{{agent.imgUrl}}" class="img-circle" style="width:20px" ></img>&nbsp;
+                                                {{agent.value}}
+                                            <span class="pull-right" style="padding: 2px;">
+                                                <span class="badge">{{agent.key}}</span> <span class="glyphicon glyphicon-home" /> &nbsp;&nbsp;
+                                                <span class="badge">{{agent.selection}}</span> <span class="glyphicon glyphicon-map-marker" />
+                                            </span>
+                                          </li>
+                                        </ul>
+                                     </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Assign- Modal -->
+                            <div class="modal fade" id="autoAssign" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 50px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-tower" style="font-size:16px;"/> &nbsp;Auto assign
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                     To auto assign, select/unselect the reps from the options provided. 
+                                     You can change the assignment order based on the order of the sortable list.
+                                     Once done, please click the assign button.
+                                     <br/><br/>
+                                     <div>
+                                        <ul ui-sortable="sortableOptions" ng-model="list" class="list-group" style="max-height: 300px; overflow-y: auto;">
+                                          <li ng-repeat="item in list" class="list-group-item" style="margin-left: 0px; border-color: #E6E6FA; background-color: {{item.checked?'#337ab7':'#E6E6FA'}}; color: {{item.checked?'#ffffff':'#000000'}}">
+                                            <span ng-click="item.checked=!item.checked" class="cursor-pointer">
+                                                <span class="glyphicon pull-left" ng-class="{'glyphicon-ok': item.checked, 'glyphicon-remove': !item.checked}" style="padding: 4px;" ></span>
+                                                &nbsp;<img src="{{item.imgUrl}}" class="img-circle" style="width:20px" ></img>&nbsp;&nbsp;{{item.value}}
+                                            </span>
+                                            <span class="cursor-move glyphicon glyphicon-align-justify pull-right" style="padding: 4px;"></span>
+                                          </li>
+                                        </ul>
+                                     </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                                    <button type="button" class="btn btn-primary" data-dismiss="modal" ng-click="autoAssign()">Assign</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Reassign FSM- Modal -->
+                            <div class="modal fade" id="reassignFSMModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-pencil" style="font-size:16px;"/> &nbsp;Update FSM
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <div>
+                                          <div class="form-group">
+                                            <label for="MCPM_FSM__c">FSM</label>
+                                            <select id="MCPM_FSM__c" ng-model="selectedFSM" ng-options="option.key as option.value for option in fsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="saveAssignment()" id="saveAssignment" 
+                                        ng-disabled="selectedFSM ==''" >Save</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!--NPC:9707-->
+                            
+                             <div class="modal fade" id="reassignFSMModalBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-pencil" style="font-size:16px;"/> &nbsp;Select FSM To View
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <div>
+                                          <div class="form-group">
+                                            <label for="MCPM_FSM__c">FSM</label>
+                                            <select id="MCPM_FSM__c" ng-model="selectedFSMId" ng-options="option.key as option.value for option in fsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="changeAssignment('{{selectedFSMId}}')" id="changeAssignment" 
+                                        ng-disabled="selectedFSMId ==''" >Save</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- NPC:9707 -->
+                            <!-- NPC:9707 -->
+                            <div class="modal fade" id="changeFSMModalBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-pencil" style="font-size:16px;"/> &nbsp;Select FSM To View
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <div>
+                                          <div class="form-group">
+                                            <label for="MCPM_FSM__c">FSM</label>
+                                            <select id="MCPM_FSM__c" ng-model="checkedFSMId" ng-options="option.key as option.value for option in newFsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="changeFSMAssignment('{{checkedFSMId}}')" id="changeAssignment" 
+                                        ng-disabled="checkedFSMId ==''" >Save</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>             
+                            <div class="modal fade" id="reassignRSMModalBox" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-pencil" style="font-size:16px;"/> &nbsp;Select RSM To View
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <div>
+                                          <div class="form-group">
+                                            <label for="OwnerId">RSM</label>
+                                            <select id="OwnerId" ng-model="selectedRSMId" ng-options="option.key as option.value for option in newRsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="changeRsmAssignment('{{selectedRSMId}}')" id="changeAssignment" 
+                                        ng-disabled="selectedRSMId ==''" >Save</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                        <!-- NPC:9707 -->
+                        
+                            <!-- Assign Rep- Modal -->
+                            <div class="modal fade" id="reassignRepModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-pencil" style="font-size:16px;"/> &nbsp;Update {{assigningCurrent?'current':'future'}} rep
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <alert class="alert-dismissible" ng-repeat="alert in dialogAlerts" type="{{alert.type}}" id="alert">{{alert.msg}}</alert>
+                                    <div ng-hide="collapseInput">
+                                      <div class="form-group">
+                                        <label for="MCPM_Rep__c">{{assigningCurrent?'Current':'Future'}} rep</label>
+                                        <select id="MCPM_Rep__c" ng-model="selectedRep" ng-options="option.key as option.value for option in repOptions" 
+                                            class="form-control" style="width: 300px;"></select>
+                                      </div>
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal" ng-hide="collapseInput">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="saveRepAssignment()" id="saveRepAssignment" 
+                                        ng-disabled="selectedRep ==''" ng-show="isFromSector" >Save</button>
+                                    <button type="button" class="btn btn-success" ng-click="savePostcodeRepAssignment()" id="savePostcodeRepAssignment" data-loading-text="Saving..."
+                                        ng-disabled="selectedRep ==''" ng-show="isFromPostcode && !collapseInput">Save</button>
+                                    <button type="button" class="btn" data-dismiss="modal" ng-click="walkpostcode()" ng-show="collapseInput">Ok</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Progress- Modal -->
+                            <div class="modal fade" id="progressModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);" data-backdrop="static">
+                              <div class="modal-dialog modal-lg" style="margin-top: 250px;">
+                                <div class="modal-content" style="height: 100px;">
+                                  <div class="modal-body">
+                                    <div class="row">
+                                      <div class="form-group col-md-12" >
+                                        <small><em>Almost there... {{selectedSectors.length}} left of {{total}}, saving <b>{{selectedSectors[0].Name}}</b>...</em></small><br/><br/>
+                                        <progressbar class="progress-striped active" value="dynamic" type="info" />
+                                        <small class="pull-right"><em><b>{{dynamic | number:0}}% completed</b></em></small><br/><br/>
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Add new button -->
+                            <div class="btn-group">
+                              <button type="button" class="btn btn-primary btn-sm dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                                Add new <span class="caret"></span>
+                              </button>
+                              <ul class="dropdown-menu">
+                                <li ng-hide="isFSM"><a ng-click="addNew()">Walk sector</a></li>
+                                <li><a ng-click="addNewPostcode()">Walk postcode</a></li>
+                              </ul>
+                            </div>
+                            <!-- Add new- Walk Sector Modal -->
+                            <div class="modal fade" id="addNewModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-plus" style="font-size:16px;"/> &nbsp;Add walk sector
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <alert class="alert-dismissible" ng-repeat="alert in dialogAlerts" type="{{alert.type}}" id="alert">{{alert.msg}}</alert>
+                                      <div ng-hide="collapseInput">
+                                          <div class="form-group" ng-class="{'has-success' : newWalkSector.Name !='','has-error' : newWalkSector.Name ==''}">
+                                            <label for="Name">Walk sector *</label>
+                                            <input class="form-control" ng-model="newWalkSector.Name" id="Name" placeholder="Walk sector" style="width: 200px;" />
+                                          </div>
+                                          <div class="form-group" ng-class="{'has-success' : newWalkSector.OwnerId !='','has-error' : newWalkSector.OwnerId ==''}" ng-show="rsmOptions.length > 1">
+                                            <label for="OwnerId">RSM *</label>
+                                            <select id="OwnerId" ng-model="newWalkSector.OwnerId" ng-options="option.key as option.value for option in rsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                          <div class="form-group">
+                                            <label for="MCPM_FSM__c">FSM</label>
+                                            <select id="MCPM_FSM__c" ng-model="newWalkSector.MCPM_FSM__c" ng-options="option.key as option.value for option in fsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                          <div class="row" style="padding-top: 10px;padding-bottom: 30px;">
+                                            <div class="col-sm-6" >
+                                                <div class="form-group">
+                                                  <span style="cursor: pointer; font-size: 1.2em;" ng-click="newWalkSector.MCPM_Current_State__c = !newWalkSector.MCPM_Current_State__c">
+                                                    <span class="glyphicon" ng-class="{'glyphicon-check' : newWalkSector.MCPM_Current_State__c, 'glyphicon-unchecked' : !newWalkSector.MCPM_Current_State__c}"/>
+                                                    <b>Current</b>
+                                                  </span>
+                                                </div>
+                                            </div>
+                                            <div class="col-sm-6" >
+                                                <div class="form-group">
+                                                  <span style="cursor: pointer; font-size: 1.2em;" ng-click="newWalkSector.MCPM_Future_State__c = !newWalkSector.MCPM_Future_State__c">
+                                                    <span class="glyphicon" ng-class="{'glyphicon-check' : newWalkSector.MCPM_Future_State__c, 'glyphicon-unchecked' : !newWalkSector.MCPM_Future_State__c}"/>
+                                                    <b>Future</b>
+                                                  </span>
+                                                </div>
+                                            </div>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal" ng-hide="collapseInput">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="saveWalkSector()" data-loading-text="Saving..." id="saveWalkSector" 
+                                        ng-disabled="newWalkSector.Name =='' || newWalkSector.OwnerId ==''" ng-hide="collapseInput" >Save</button>
+                                    <button type="button" class="btn" data-dismiss="modal" ng-click="walksector()" ng-show="collapseInput">Ok</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <!-- Add new- Walk Postcode Modal -->
+                            <div class="modal fade" id="addNewPostcodeModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5);">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-plus" style="font-size:16px;"/> &nbsp;Add walk postcode
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <form>
+                                      <alert class="alert-dismissible" ng-repeat="alert in dialogAlerts" type="{{alert.type}}" id="alert">{{alert.msg}}</alert>
+                                      <div ng-hide="collapseInput">
+                                          <div class="form-group" ng-class="{'has-success' : newWalkPostcode.Name !='','has-error' : newWalkPostcode.Name ==''}">
+                                            <label for="Name">Walk postcode *</label>
+                                            <input class="form-control" ng-model="newWalkPostcode.Name" id="Name" placeholder="Walk postcode" style="width: 200px;" />
+                                          </div>
+                                          <div class="form-group" ng-class="{'has-success' : newWalkPostcode.OwnerId !='','has-error' : newWalkPostcode.OwnerId ==''}" ng-hide="isFSM">
+                                            <label for="OwnerId">FSM *</label>
+                                            <select id="OwnerId" ng-model="newWalkPostcode.OwnerId" ng-options="option.key as option.value for option in fsmOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                          <div class="form-group" ng-hide="isRSM">
+                                            <label for="OwnerId">Rep *</label>
+                                            <select id="OwnerId" ng-model="newWalkPostcode.MCPM_Rep__c" ng-options="option.key as option.value for option in repOptions" 
+                                                class="form-control" style="width: 300px;"></select>
+                                          </div>
+                                      </div>
+                                    </form>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn" data-dismiss="modal" ng-hide="collapseInput">Cancel</button>
+                                    <button type="button" class="btn btn-success" ng-click="saveWalkPostcode()" data-loading-text="Saving..." id="saveWalkPostcode" 
+                                        ng-disabled="newWalkPostcode.Name =='' || (!isFSM && newWalkPostcode.OwnerId =='')" ng-hide="collapseInput" >Save</button>
+                                    <button type="button" class="btn" data-dismiss="modal" ng-show="collapseInput">Ok</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                            <button type="button" class="btn btn-info  btn-sm" data-toggle="modal" ng-click="forSectors = false; agentsInfo();" data-target="#assignments">Assignments</button>
+                            <button type="button" class="btn btn-success btn-sm" ng-click="startNextModal()" ng-hide="isFSM">Start next period</button>
+                            <!-- Start next period- Modal -->
+                            <div class="modal fade" id="startNextModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" style="background: rgba(0, 0, 0, .5); overflow: hidden;">
+                              <div class="modal-dialog" style="margin-top: 150px;">
+                                <div class="modal-content">
+                                  <div class="modal-header">
+                                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                                    <h4 class="modal-title" id="myModalLabel">
+                                        <span class="glyphicon glyphicon-fire" style="font-size:16px;"/> &nbsp;Start next period
+                                    </h4>
+                                  </div>
+                                  <div class="modal-body">
+                                    <alert class="alert-dismissible" ng-repeat="alert in dialogAlerts" type="{{alert.type}}" id="alert">{{alert.msg}}</alert>
+                                    <div ng-hide="collapseInput">
+                                        <p>As you confirm, a new period of Walkcard will start where sectors assigned for current walk will replaced by the sectors assigned for the next Walkcard run.
+                                        Please confirm your response.</p>
+                                    </div>
+                                  </div>
+                                  <div class="modal-footer">
+                                    <button type="button" class="btn btn-default" data-dismiss="modal" ng-hide="collapseInput">Close</button>
+                                    <button type="button" class="btn btn-primary" ng-click="startNextPeriod()" ng-hide="collapseInput">Confirm</button>
+                                    <button type="button" class="btn" data-dismiss="modal" ng-show="collapseInput">Ok</button>
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4" style="margin-top: 10px; margin-bottom: 20px;" ng-hide="isRSM" >
+                            <div class="pull-right">
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showCurrent=true;showFuture=false;showAll=false;walksector();">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showCurrent, 'glyphicon-unchecked' : !showCurrent}"/> Show current
+                                </span>
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showFuture=true;showCurrent=false;showAll=false;walksector()">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showFuture, 'glyphicon-unchecked' : !showFuture}"/> Show future
+                                </span>
+                                <span style="cursor: pointer;margin-left: 10px;" ng-click="showAll=true;showCurrent=false;showFuture=false;walksector()">
+                                    <span class="glyphicon" ng-class="{'glyphicon-check' : showAll, 'glyphicon-unchecked' : !showAll}"/> Show all
+                                </span>
+                            </div>
+                        </div>
+                        <div class="form-group col-md-4" ng-show="isRSM" >
+                            <input class="form-control input-sm pull-right" id="searchText" placeholder="Search walk sectors" style="width:50%" ng-model="searchText" ng-change="walksector()" />
+                        </div>
+                    </div>
+                    <div class="row" ng-hide="loaded || alerts">
+                        <div class="form-group col-md-12" >
+                            <img class="center-block" src="/s.gif" border="0" />
+                        </div>
+                    </div>
+                    <div class="row" ng-show="alerts">
+                        <div class="form-group col-md-12" >
+                            <alert class="alert-dismissible" ng-repeat="alert in alerts" type="{{alert.type}}" >{{alert.msg}}</alert>
+                        </div>
+                    </div>
+                    <div class="row" ng-show="walksectorData">
+                        <div class="form-group col-md-12" >
+                            <!--NPC:10676-->
+                            <table class="table table-condensed table-hover" ng-hide="{!OR(bIsRSM,rsmtoRsmView,adminView)}" >
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;cursor: pointer;" ng-class="{'glyphicon-check' : selectAll, 'glyphicon-unchecked' : !selectAll}" ng-click="selectAll = !selectAll;selectAction();"/>
+                                            <a ng-click="changeSort('MCPM_Walk_Sector_Sort__c')">Walk Sector <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Walk_Sector_Sort__c'"/></a>
+                                        </th>
+                                        <th><a ng-click="changeSort('MCPM_Number_Of_Premises__c')">Total Number of premises <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon"  ng-show="sort=='MCPM_Number_Of_Premises__c'"/></a></th>
+                                        <th scope="col"><a ng-click="changeSort('MCPM_Active_Premises__c')">Active Premises</a></th>
+                                        <th><a ng-click="changeSort('Owner.Name')">RSM <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='Owner.Name'"/></a></th>
+                                        <th><a ng-click="changeSort('MCPM_FSM__r.Name')">FSM <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_FSM__r.Name'"/></a></th>
+                                        <th ng-hide="showFuture"><a ng-click="changeSort('MCPM_Current_State__c')">Current <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Current_State__c'"/></a></th>
+                                        <th ng-hide="showCurrent"><a ng-click="changeSort('MCPM_Future_State__c')">Future <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Future_State__c'"/></a></th>
+                                    </tr>
+                                </thead>
+                                <tr ng-repeat="walksector in filteredWalksectorData" ng-class="{'saving' : walksector.fade}" style="{{walksector.select?'background:#e8e8e9;':''}}">
+                                    <td style="vertical-align: middle; cursor: pointer;" ng-click="walksector.select = !walksector.select;select($index);">
+                                        <span>
+                                            <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;" ng-class="{'glyphicon-check' : walksector.select, 'glyphicon-unchecked' : !walksector.select}"/> {{walksector.Name}}
+                                        </span>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        {{walksector.MCPM_Number_Of_Premises__c}}
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        {{walksector.MCPM_Active_Premises__c}}
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-hide="rsmOptions.length > 1">
+                                        {{walksector.Owner.Name}}
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-show="rsmOptions.length > 1">
+                                        <select id="OwnerId" ng-model="walksector.OwnerId" ng-options="option.key as option.value for option in rsmOptions" 
+                                            class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ></select>
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-hide="fsmOptions.length > 1">
+                                        {{walksector.MCPM_FSM__r.Name}}
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-show="fsmOptions.length > 1">
+                                        <select id="MCPM_FSM__c" ng-model="walksector.MCPM_FSM__c" ng-options="option.key as option.value for option in fsmOptions" 
+                                            class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ></select>
+                                    </td>
+                                    <td ng-hide="showFuture" style="vertical-align: middle;">
+                                        <div class="form-inline">
+                                            <a ng-hide="isFSM" ng-click="walksector.MCPM_Current_State__c=!walksector.MCPM_Current_State__c;save($index)">
+                                                <div style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Current_State__c, 'glyphicon-remove' : !walksector.MCPM_Current_State__c}"/>
+                                            </a>
+                                            <div ng-show="isFSM" style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Current_State__c, 'glyphicon-remove' : !walksector.MCPM_Current_State__c}"/>
+                                            <select id="MCPM_Current_Rep__c" ng-model="walksector.MCPM_Current_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                              class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ng-hide="isRSM" >
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td ng-hide="showCurrent" style="vertical-align: middle;">
+                                        <div class="form-inline">
+                                            <a ng-hide="isFSM" ng-click="walksector.MCPM_Future_State__c=!walksector.MCPM_Future_State__c;save($index)">
+                                                <div style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Future_State__c, 'glyphicon-remove' : !walksector.MCPM_Future_State__c}"/>
+                                            </a>
+                                            <div ng-show="isFSM" style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Future_State__c, 'glyphicon-remove' : !walksector.MCPM_Future_State__c}"/>
+                                            <select id="MCPM_Future_Rep__c" ng-model="walksector.MCPM_Future_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                              class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ng-hide="isRSM" >
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                            <!--NPC:10676-->
+                            <table class="table table-condensed table-hover" ng-hide="{!OR(bIsFSM,rsmtoFsmView)}" >
+                                <thead>
+                                    <tr>
+                                        <th>
+                                            <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;cursor: pointer;" ng-class="{'glyphicon-check' : selectAll, 'glyphicon-unchecked' : !selectAll}" ng-click="selectAll = !selectAll;selectAction();"/>
+                                            <a ng-click="changeSort('MCPM_Walk_Sector_Sort__c')">Walk Sector <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Walk_Sector_Sort__c'"/></a>
+                                        </th>
+                                        <th><a ng-click="changeSort('MCPM_Number_Of_Premises__c')">Total Number of premises <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon"  ng-show="sort=='MCPM_Number_Of_Premises__c'"/></a></th>
+                                        <th><a ng-click="changeSort('Owner.Name')">RSM <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='Owner.Name'"/></a></th>
+                                        <th><a ng-click="changeSort('MCPM_FSM__r.Name')">FSM <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_FSM__r.Name'"/></a></th>
+                                        <th ng-hide="showFuture"><a ng-click="changeSort('MCPM_Current_State__c')">Current <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Current_State__c'"/></a></th>
+                                        <th ng-hide="showCurrent"><a ng-click="changeSort('MCPM_Future_State__c')">Future <span ng-class="{'glyphicon-sort-by-alphabet' : !reverse,'glyphicon-sort-by-alphabet-alt' : reverse}" class="glyphicon" ng-show="sort=='MCPM_Future_State__c'"/></a></th>
+                                    </tr>
+                                </thead>
+                                <tr ng-repeat="walksector in filteredWalksectorData" ng-class="{'saving' : walksector.fade}" style="{{walksector.select?'background:#e8e8e9;':''}}">
+                                    <td style="vertical-align: middle; cursor: pointer;" ng-click="walksector.select = !walksector.select;select($index);">
+                                        <span>
+                                            <span class="glyphicon" style="color: #7f7f7f; font-size: 15px;" ng-class="{'glyphicon-check' : walksector.select, 'glyphicon-unchecked' : !walksector.select}"/> {{walksector.Name}}
+                                        </span>
+                                    </td>
+                                    <td style="vertical-align: middle;">
+                                        {{walksector.MCPM_Number_Of_Premises__c}}
+                                    </td>
+
+                                    <td style="vertical-align: middle;" ng-hide="rsmOptions.length > 1">
+                                        {{walksector.Owner.Name}}
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-show="rsmOptions.length > 1">
+                                        <select id="OwnerId" ng-model="walksector.OwnerId" ng-options="option.key as option.value for option in rsmOptions" 
+                                            class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ></select>
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-hide="fsmOptions.length > 1">
+                                        {{walksector.MCPM_FSM__r.Name}}
+                                    </td>
+                                    <td style="vertical-align: middle;" ng-show="fsmOptions.length > 1">
+                                        <select id="MCPM_FSM__c" ng-model="walksector.MCPM_FSM__c" ng-options="option.key as option.value for option in fsmOptions" 
+                                            class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ></select>
+                                    </td>
+                                    <td ng-hide="showFuture" style="vertical-align: middle;">
+                                        <div class="form-inline">
+                                            <a ng-hide="isFSM" ng-click="walksector.MCPM_Current_State__c=!walksector.MCPM_Current_State__c;save($index)">
+                                                <div style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Current_State__c, 'glyphicon-remove' : !walksector.MCPM_Current_State__c}"/>
+                                            </a>
+                                            <div ng-show="isFSM" style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Current_State__c, 'glyphicon-remove' : !walksector.MCPM_Current_State__c}"/>
+                                            <select id="MCPM_Current_Rep__c" ng-model="walksector.MCPM_Current_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                              class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ng-hide="isRSM" >
+                                            </select>
+                                        </div>
+                                    </td>
+                                    <td ng-hide="showCurrent" style="vertical-align: middle;">
+                                        <div class="form-inline">
+                                            <a ng-hide="isFSM" ng-click="walksector.MCPM_Future_State__c=!walksector.MCPM_Future_State__c;save($index)">
+                                                <div style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Future_State__c, 'glyphicon-remove' : !walksector.MCPM_Future_State__c}"/>
+                                            </a>
+                                            <div ng-show="isFSM" style="font-size: 17px; padding-right: 15px;" class="glyphicon" ng-class="{'glyphicon-ok' : walksector.MCPM_Future_State__c, 'glyphicon-remove' : !walksector.MCPM_Future_State__c}"/>
+                                            <select id="MCPM_Future_Rep__c" ng-model="walksector.MCPM_Future_Rep__c" ng-options="option.key as option.value for option in repOptions"
+                                              class="form-control input-sm" style="height: 21px; width: inherit; padding: 0px 10px;" ng-change="save($index)" ng-hide="isRSM" >
+                                            </select>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+
+                            <pagination class="pagination-sm" total-items="totalItems" items-per-page="itemsPerPage" ng-model="currentPage" max-size="10" ng-show="walksectorData && (walksectorData.length>15)" rotate="false" previous-text="<" next-text=">"></pagination>
+                            <button type="button" class="btn btn-default btn-xs pull-right" >Total: {{totalItems==500?totalItems + '+':totalItems}}</button>
+                        </div>
+                    </div>
+                    <div class="row" ng-hide="!loaded || walksectorData">
+                        <div class="form-group col-md-12" >
+                            No walk sectors match your search.
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!--adding scripts-->
+            <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js" ></script>
+            <script src="//code.jquery.com/ui/1.11.4/jquery-ui.js" ></script>
+            <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" ></script>
+		 <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+            <script src="http://ajax.googleapis.com/ajax/libs/angularjs/1.4.8/angular.min.js" ></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.2/ui-bootstrap-tpls.js" ></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.2/ui-bootstrap-tpls.min.js" ></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.2/ui-bootstrap.js"></script>
+            <script src="https://cdnjs.cloudflare.com/ajax/libs/angular-ui-bootstrap/1.3.2/ui-bootstrap.min.js" ></script>
+            
+            <!--page specific script-->
+            <script>
+                
+                var rsmOptions = JSON.parse('{!JSENCODE(strJsonRSMOptions)}');
+                var fsmOptions = JSON.parse('{!JSENCODE(strJsonFSMOptions)}');
+                var repOptions = JSON.parse('{!JSENCODE(strJsonRepOptions)}');
+                var masterWalkSector = JSON.parse('{!JSENCODE(strJsonWalkSector)}');
+                var masterWalkPostcode = JSON.parse('{!JSENCODE(strJsonWalkPostcode)}');
+                var isRSM = JSON.parse('{!JSENCODE(IF(bIsRSM, "true", "false"))}');
+                var isFSM = JSON.parse('{!JSENCODE(IF(bIsFSM, "true", "false"))}');
+                var strWalkStartDate = '{!JSENCODE(strWalkStartDate)}';
+                var newRsmOptions = JSON.parse('{!JSENCODE(strJsonFnalRSMOptions)}');<!-- NPC:9707 -->
+                var newFsmOptions = JSON.parse('{!JSENCODE(strJsonFnalFSMOptions)}');<!-- NPC:9707 -->
+                
+                var tmpList = [];
+                
+                j$=jQuery.noConflict();
+            
+               
+                
+
+                               
+                function saveWalkSectorR(walkSector, callback){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.MCPM_WalkSectorsTab_Controller.saveWalkSector}',
+                        walkSector, 
+                        callback,  
+                        {escape: false}  
+                    );        
+                }
+                
+                function walkpostcodeR(searchText, sectorIds, isRSM, callback){
+                	<!-- P7082906 -->
+                    var fsmid = "{!$CurrentPage.parameters.fsmid}";
+                    <!-- P7082906 -->
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.MCPM_WalkSectorsTab_Controller.walkpostcodeData}',
+                        searchText, sectorIds, isRSM,fsmid,
+                        callback,  
+                        {escape: false}  
+                    );        
+                }
+                
+              
+                function autoAssignR(options, sectorIds, callback){
+                	<!-- P7120650  -->
+                	var fsmid = "{!$CurrentPage.parameters.fsmid}";
+                	<!-- P7120650  -->
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.MCPM_WalkSectorsTab_Controller.autoAssign}',
+                        options, sectorIds, fsmid,
+                        callback,
+                        {escape: false}
+                    );        
+                }
+                
+                function agentsInfoR(current, selectedSectorIds, isRSM, callback){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.MCPM_WalkSectorsTab_Controller.assignmentInfo}',
+                        current, selectedSectorIds, isRSM,
+                        callback,
+                        {escape: false}
+                    );        
+                }
+                
+              
+                
+                function savePostcodesR(walkPostcodes, callback){
+                    Visualforce.remoting.Manager.invokeAction(
+                        '{!$RemoteAction.MCPM_WalkSectorsTab_Controller.savePostcodes}',
+                        walkPostcodes, 
+                        callback,  
+                        {escape: false}  
+                    );        
+                }
+            </script>
+            
+            <!--page specific script-->
+            <script src="{!URLFOR($Resource.MCPM_WalkSectorsTab_Script)}" ></script>
+        </body>
+    </html>
+</apex:page>

@@ -1,0 +1,3 @@
+<apex:page controller="BlastToAgentsController" action="{!process}">
+<apex:outputtext value="{!noOfContacts} were found and emailed" rendered="{!displayresults}"/>
+</apex:page>

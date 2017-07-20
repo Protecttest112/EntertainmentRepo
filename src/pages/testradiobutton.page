@@ -1,0 +1,11 @@
+<!-- Page: -->
+<apex:page controller="sampleCon" showHeader="false">
+     <apex:form >
+        <apex:selectRadio value="{!country}">
+            <apex:selectOptions value="{!items}"/>
+            </apex:selectRadio><p/>
+     </apex:form>
+     <apex:outputPanel id="out">
+           
+     </apex:outputPanel>  
+</apex:page>

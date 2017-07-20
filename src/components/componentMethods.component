@@ -1,0 +1,7 @@
+<apex:component >
+    
+         hello
+       
+{!$Component.status}
+    
+</apex:component>

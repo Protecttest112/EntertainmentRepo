@@ -1,0 +1,16 @@
+<apex:page controller="CRMC_MassUpdate.crmcMassUpdateAboutController" >
+  <h1>CRMCulture Mass Update Tool</h1>
+    Version {!versionNumber}.
+    <br /> <br />
+    Steps to implement:
+    <ol>
+        <li>Create a Field Set for your object type.</li>
+        <li>Associate that Field Set with the object type and user(s), profile(s) and global configurations (See settings page at the bottom)</li>
+        <li>Create the button</li>
+        <li>Add the button to the relevant Search Layouts</li>
+    </ol>
+    <br />
+    <apex:iframe src="https://www.crmculture.com/product/support-page.html"  />
+    Check the settings page here: <br />
+  <apex:outputLink value="{!$Page.CRMC_MassUpdate__crmc_Mass_Update_Settings}">Mass Update Settings</apex:outputLink>
+</apex:page>

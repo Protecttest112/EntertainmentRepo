@@ -1,0 +1,16 @@
+<apex:page standardController="Contact" action="{!if($Profile.Name =='System Administrator1',null,urlFor($Action.Account.View, '001i000001ACubN'))}" showHeader="false">
+
+{!$Profile.Name =='System Administrator'}
+
+<apex:sectionheader title="Contact Edit" subtitle="{!if(Contact.Id==null,'New Lead',Contact.Name)}"></apex:sectionheader>
+
+    <apex:pageBlock title="Your page title">
+
+        <!-- Your VF Page  --> 
+        {!contact.Id}
+        <apex:form >
+        <apex:inputField value="{!Contact.Name}"/>
+        </apex:form>
+    </apex:pageBlock>
+
+</apex:page>

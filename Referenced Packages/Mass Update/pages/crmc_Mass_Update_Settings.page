@@ -1,0 +1,235 @@
+<apex:page controller="CRMC_MassUpdate.crmcMassUpdateSettingsController" tabStyle="crmc_Mass_Update_Settings__tab" >
+        <apex:stylesheet value="{!URLFOR($Resource.CRMC_MassUpdate__kendoui, '/styles/kendo.common.min.css')}"/>
+        <apex:stylesheet value="{!URLFOR($Resource.CRMC_MassUpdate__kendoui, '/styles/kendo.silver.min.css')}"/>
+        <apex:includeScript value="//code.jquery.com/jquery-1.11.0.min.js"/>
+        <apex:includeScript value="../../soap/ajax/31.0/connection.js"/>
+        <apex:includeScript value="{!$Resource.CRMC_MassUpdate__Admin}" />      
+        <apex:includeScript value="{!URLFOR($Resource.CRMC_MassUpdate__kendoui, '/js/kendo.all.min.js')}"/>
+    <script>
+    function loadme(e)
+    {
+        e.value = "...";
+        window.setTimeout(function(){cycleDots(e, 8000, 500)},500)
+        return true;
+    }
+    function cycleDots(e, msLeft, incr)
+    {
+        if (e.value == ".")
+            e.value = "..";
+        else if (e.value == "...")
+            e.value = ".";
+        else
+            e.value = "...";
+        if (msLeft > 0)
+        	window.setTimeout(function(){cycleDots(e, msLeft-incr, incr)},incr)
+    }
+    function loadingBar(name)
+    {
+        id = name.substring(0, name.lastIndexOf(':')+1)+'fieldSet';
+        elem = document.getElementById(id).parentNode;
+        width = elem.offsetWidth;
+        while(elem.nextSibling != null)
+        {
+            elem = elem.nextSibling;
+            width += elem.offsetWidth;
+        }
+        width -= 4;
+        document.getElementById(id).innerHTML = '<div style="-webkit-border-radius: 4px;border-radius: 4px;background-color: rgba(0,0,0,0.5); width: '+width+'px; height: 24px; text-align: center;position: absolute;color: white;font-size: large;">Loading...</div>' + document.getElementById(id).innerHTML;
+    }
+    function checkTables()
+    {
+        Object.each(tableList, function(tableName){
+            AdminService.getCustomObject(tableName);
+        });
+    }
+    function setDisplayName(name, value)
+    {
+        var elems = document.getElementsByName(name);
+   		for(var i = 0; i < elems.length; i++)
+        {
+            elems[i].style.display = value;
+        }
+    }
+    var tableList = [];
+    var custObjects = {};
+    var AdminService;
+    $(document).ready(function() {
+        crmc.require([/*'ObjectList',*/ 'KendoPopup', 'admin', 'KendoEntry'], function(/*ObjectList,*/ alert, admin, prompt) {
+                admin.init("{!$Api.Session_ID}");
+                var custObj;
+                sforce.connection.sessionId = "{!JSENCODE($Api.Session_ID)}";
+
+                // Global so can be used on inline onClick handlers
+                AdminService = {
+                    getCustomObject: function(tableName){
+                        admin.getCustomObject(tableName, function(adminService){
+                            //document.getElementById('tableInfo').innerText = adminService.custObj.label + " ActionGrid Integration Points";
+                            setDisplayName('hasButton_'+tableName, adminService.hasButton?"block":"none");
+                            setDisplayName('noButton_'+tableName, adminService.hasButton?"none":"block");
+                            setDisplayName('hasSearchResults_'+tableName,adminService.hasSearchResults?"block":"none");
+                            setDisplayName('noSearchResults_'+tableName, adminService.hasSearchResults?"none":"block");
+                            setDisplayName('hasListView_'+tableName, adminService.hasListView?"block":"none");
+                            setDisplayName('noListView_'+tableName, adminService.hasListView?"none":"block");
+                            custObjects[tableName] = adminService;
+                            custObj = adminService;
+                        });
+                    },
+                    createButton: function(fullName) {
+                        admin.createButton(fullName, function(response){
+                            if (response.success == "true") {
+                                setDisplayName('hasButton_'+fullName, "block");
+                                setDisplayName('noButton_'+fullName, "none");
+                            }
+                            else {
+                                alert.popup("Error Creating Button", response.errors.message);
+                            }
+                        });
+                    },
+                    addToSearchResult: function(fullName) {
+                        admin.addToSearchResult(custObjects[fullName].custObj, function(response)
+                        {
+                            if (response.success == "true") {
+                                setDisplayName('hasSearchResults_'+fullName,"block");
+                                setDisplayName('noSearchResults_'+fullName, "none");
+                            }
+                            else {
+                                alert.popup("Error Adding Button", response.errors.message);
+                            }
+
+                        });
+                    },
+                    addToListViewButtons: function(fullName) {
+                        admin.addToListViewButtons(custObjects[fullName].custObj, function(response)
+                        {
+                            if (response.success == "true") {
+                                setDisplayName('hasListView_'+fullName, "block");
+                                setDisplayName('noListView_'+fullName,"none");
+                            }
+                            else {
+                                alert.popup("Error Adding Button", response.errors.message);
+                            }
+
+                        }); 
+                    },
+                    createVFPage: function() {
+                        var objDescribe = sforce.connection.describeSObject(admin.custObj.fullName);
+                        var relationships = [];
+                        Object.each(objDescribe.childRelationships, function(relation){relationships.push({value:relation.childSObject+'___'+relation.relationshipName, label:relation.childSObject + (relation.relationshipName!=undefined?' ('+relation.relationshipName+')':'')});});
+                        prompt.entry('Select Child Relationship', [{name: "relationship", label: "Select Relationship", type:"picklist", values: relationships}], {width:500}, null,
+                            function(selectedValues){
+                            var lookup = selectedValues[0].value.split('___');
+                            Object.each(objDescribe.childRelationships, function(relation){
+                                if (relation.childSObject == lookup[0] && (relation.relationshipName == lookup[1]|| (lookup[1] == 'undefined'&& relation.relationshipName == undefined)))
+                                {
+                                    admin.createVFPage(relation.childSObject, relation.relationshipName == undefined? relation.childSObject:relation.relationshipName, relation.field, function(adminService, response){
+                                        console.log(adminService);
+                                        console.log(response)
+                                        if (response.success == "true")
+                                            alert.popup('VisualForce Page Created!', 'VisualForce page "'+response.fullName+'" created successfully!');
+                                        else
+                                            alert.popup('VisualForce Page Error',  'VisualForce page not created: '+response.errors.message);
+                                    });
+                                }
+                            });
+                        });
+                    },
+                    navigateLayouts: function()
+                    {
+                        window.location.href = "/ui/setup/layout/PageLayouts?type=" + admin.custObj.fullName;
+                    },
+                };
+                /*var list = new ObjectList({
+                    elementId: "#ObjectList",
+                    delegate: {
+                        onSelectedChanged: function(text, value) {
+                            // Selected table changed, update display
+                            AdminService.getCustomObject(value.name);
+                        },
+                    },
+                });*/
+
+                // Show settings for Opportunity by default
+             checkTables();
+            //AdminService.getCustomObject("Opportunity");
+
+                // Wire up button event handlers
+            //$("#btnCreate").kendoButton().on('click', AdminService.createButton);
+            // $("#btnSearchResults").kendoButton().on('click', AdminService.addToSearchResult);
+            //  $("#btnListView").kendoButton().on('click', AdminService.addToListViewButtons);
+            //  $("#btnRelatedList").kendoButton().on('click', AdminService.createVFPage);
+
+            });
+        });
+        </script>
+    
+    <apex:Pagemessages />
+    <apex:form id="form">    
+        <apex:pageBlock mode="edit" id="table">
+            <apex:pageBlockButtons >
+                <apex:commandButton value="Save" action="{!Save}" />
+                <apex:commandButton value="Cancel" action="{!Cancel}" immediate="true"/>           
+            </apex:pageBlockButtons>
+            <apex:pageBlockTable value="{!listSettings}" var="setting">
+                <apex:column headerValue="Table">
+                    <apex:selectList value="{!setting.CRMC_MassUpdate__Table_Name__c}" size="1" required="true" html-crmc_field="table" >
+                        <apex:actionSupport event="onchange" reRender="fieldSet,MetaButton,MetaList,MetaCustom" onsubmit="loadingBar(this.name);" oncomplete="checkTables()" />
+                        <apex:selectOptions value="{!tables}"/>
+						<apex:selectOptions value="{!tables2}"/>
+						<apex:selectOptions value="{!tables3}"/>                        
+                    </apex:selectList>               
+                </apex:column>   
+                <apex:column headerValue="Field Set">
+                    <apex:outputPanel id="fieldSet">
+                            <apex:selectList value="{!setting.CRMC_MassUpdate__FieldSetName__c}" size="1"  >
+                                <apex:selectOptions value="{!fieldSets[setting.CRMC_MassUpdate__Table_Name__c].options}"/>
+                            </apex:selectList>
+                        <apex:outputPanel rendered="{!setting.CRMC_MassUpdate__Table_Name__c != null}">                
+                            <script>
+                                if (tableList.indexOf("{!setting.CRMC_MassUpdate__Table_Name__c}") <0)
+                                {
+                                    tableList.push("{!setting.CRMC_MassUpdate__Table_Name__c}");
+                                }
+                            </script>
+                            <a target="_blank" href="/p/setup/custent/FieldSetListUI/d?tableEnumOrId={!setting.CRMC_MassUpdate__Table_Name__c}" title="Edit Field Sets for {!setting.Table_Name__C}"><img src="/s.gif" alt="Edit Field Sets" class="lookupIcon" onblur="this.className = 'lookupIcon';" onfocus="this.className = 'lookupIconOn';" onmouseout="this.className = 'lookupIcon';this.className = 'lookupIcon';" onmouseover="this.className = 'lookupIconOn';this.className = 'lookupIconOn';" title="Edit Field Sets" /></a>
+                        </apex:outputPanel>
+                    </apex:outputPanel>
+                </apex:column>   
+                <apex:column headerValue="Owner Type">
+                     <apex:selectList value="{!setting.CRMC_MassUpdate__Owner_Type__c}" size="1" required="true">
+                    <apex:actionSupport event="onchange" reRender="owner"/>
+                        <apex:selectOptions value="{!OwnerTypes}"/>
+                    </apex:selectList>               
+                </apex:column>
+                <apex:column headerValue="Owner" >
+                    <apex:selectList value="{!setting.CRMC_MassUpdate__Owner__c}" size="1" id="owner" disabled="{!setting.Owner_Type__c != 'profile' && setting.Owner_Type__c != 'user'  }">
+                        <apex:selectOptions value="{!CASE(setting.CRMC_MassUpdate__Owner_Type__c,'profile', profiles,'user', users, GlobalName)}" />
+                    </apex:selectList>                    
+                </apex:column>   
+                <apex:column headerValue="Button"  rendered="{!NOT(disableRemoteSite)}">
+                    <apex:outputPanel id="MetaButton">
+                        <span name='hasButton_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><apex:image url="/img/msg_icons/confirm16.png"></apex:image></span>
+                        <span name='noButton_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><button onclick="javascript:AdminService.createButton('{!setting.CRMC_MassUpdate__Table_Name__c}'); return false;">Create Button</button></span>           
+                    </apex:outputPanel>    
+                </apex:column>
+                <apex:column headerValue="List View"  rendered="{!NOT(disableRemoteSite)}">
+                    <apex:outputPanel id="MetaList">
+                        <span name='hasListView_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><apex:image url="/img/msg_icons/confirm16.png"></apex:image></span>
+                        <span name='noListView_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><button onclick="javascript:AdminService.addToListViewButtons('{!setting.CRMC_MassUpdate__Table_Name__c}'); return false;">Display Button</button></span>
+                    </apex:outputPanel>                   
+                </apex:column>
+                <apex:column headerValue="Search Results"  rendered="{!NOT(disableRemoteSite)}">
+                    <apex:outputPanel id="MetaCustom">
+                        <span name='hasSearchResults_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><apex:image url="/img/msg_icons/confirm16.png"></apex:image></span>
+                        <span name='noSearchResults_{!setting.CRMC_MassUpdate__Table_Name__c}' style="display:none"><button onclick="javascript:AdminService.addToSearchResult('{!setting.CRMC_MassUpdate__Table_Name__c}'); return false;">Display Button</button></span>
+                    </apex:outputPanel>                        
+                </apex:column>
+                <apex:column >
+                    <apex:commandButton value="Delete" action="{!remove}" rerender="table" immediate="true" onclick="if(!confirm('Are you sure?')){return};" >
+                        <apex:param name="name" value="{!setting.Name}" />
+                    </apex:commandButton>
+                </apex:column>   
+            </apex:pageBlockTable>    
+            <apex:commandButton value="Add New" action="{!Add}" rerender="table" oncomplete="checkTables();" />
+        </apex:pageBlock>
+    </apex:form>
+</apex:page>

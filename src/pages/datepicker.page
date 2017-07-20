@@ -1,0 +1,32 @@
+<apex:page controller="tablecontroller" sidebar="false" wizard="true" showHeader="false">
+  <style type="text/css">
+   .outBorder {
+    border:3px outset black;
+   }
+   .inBorder{
+    border-top:2px dotted blue;
+    border-left:2px dotted blue;
+   }
+  </style>
+  <apex:form >
+  <apex:pageblock >
+   <apex:pageBlockTable value="{!userInput}" var="addRow" >
+                            <apex:column headerValue="Product Number">
+                                <apex:inputtext value="{!addRow.productno}" />
+                            </apex:column>
+       <apex:column headerValue="Lot Number">
+                                <apex:inputtext value="{!addRow.lotno}" />
+                            </apex:column>
+       <apex:column headerValue="Quantity">
+                                <apex:inputtext value="{!addRow.qty}" />
+                            </apex:column>
+       <apex:column headerValue="Unit Price">
+                                <apex:inputtext value="{!addRow.unitprice}" />
+                            </apex:column>
+       <apex:column headerValue="Extended price">
+                                <apex:inputtext value="{!addRow.extprice}" />
+                            </apex:column>
+      </apex:pageBlockTable>
+      </apex:pageblock>
+      </apex:form> 
+ </apex:page>

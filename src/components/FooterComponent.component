@@ -1,0 +1,22 @@
+<apex:component >
+    <!-- Footer Section ---->
+    <div class="footer" name="footer">
+        <p style="text-align: center;font-size:13.25px;font-family:Arial, Helvetica, sans-serif; margin-top: 10px;">
+            <b>If you have any questions, please call XXX-XXX-XXXX</b><br/>
+            Monday through Friday 8 AM – 8 PM ET
+        </p>
+        <p style = "width: 100%; text-align: justify; color: gray;">
+            Confidentiality Notice: This facsimile message is for the sole use of the intended recipient(s) and may contain confidential<br/> 
+            and/or privileged information. Any unauthorized review, use, disclosure or distribution is prohibited. If you are not the<br/> 
+            intended recipient, please contact the sender by calling XXX-XXX-XXXX and destroy all copies of the original message.
+        </p>
+        <p style = "font-size: 11px; margin-top: 1%; color: gray;">
+            <!--- Bottom Left--->
+            <apex:outputText escape="false" value="OB105" />
+            <span style="padding-left:630px;">
+            </span>
+            <!--- Bottom Right--->
+        </p>
+    </div>
+    <!-- Footer Section ---->
+</apex:component>

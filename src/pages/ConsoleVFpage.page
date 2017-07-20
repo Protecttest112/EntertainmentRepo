@@ -1,0 +1,45 @@
+<apex:page standardController="Case">
+
+   <apex:includeScript value="/support/console/20.0/integration.js"/>
+   <script type="text/javascript">
+        function openPrimaryTab() {
+            alert('primary');
+            sforce.console.openPrimaryTab(undefined, 
+               'http://www.salesforce.com', true, 'salesforce');
+        }
+        
+        //The callback function that openSubtab will call once it's got the ID for its primary tab
+        var callOpenSubtab=function callOpenSubtab(result) {
+            sforce.console.openSubtab(result.id, 
+               'http://www.yahoo.com', true, 'yahoo');
+        };
+        
+        function openSubtab() {
+            alert('subtab');
+            sforce.console.getEnclosingPrimaryTabId(callOpenSubtab);
+        }
+
+        //Sets the title of the current tab to "SFDC"
+        function setTitle() {
+            alert('settitle');
+            sforce.console.setTabTitle('SFDC');
+        }
+        
+        //The callback function that closeTab will call once it's got the ID for its tab
+        var callCloseTab= function callCloseTab(result) {
+            alert('callclosetab');
+            sforce.console.closeTab(result.id);
+        }
+        
+        function closeTab() {
+            alert('closetab');
+            sforce.console.getEnclosingTabId(callCloseTab);
+        }
+  </script>
+
+   <A HREF="#" onClick="openPrimaryTab();return false">Open A Primary Tab</A> 
+   <p/><A HREF="#" onClick="openSubtab();return false">Open A Subtab</A> 
+   <p/><A HREF="#" onClick="setTitle();return false">Set Title to SFDC</A> 
+   <p/><A HREF="#" onClick="closeTab();return false">Close This Tab</A> 
+
+</apex:page>

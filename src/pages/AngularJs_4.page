@@ -1,0 +1,64 @@
+<apex:page sidebar="false">
+<html ng-app="angular">
+<head>
+    <script src= "//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+</head>
+<br/> <br/>
+<strong>The ng-disabled Directive </strong>
+<br/> <br/>
+<div ng-init="myswitch=true">
+    Button:- <button ng-disabled="myswitch">Click Me!</button >
+    <br/><br/>
+    Checkbox:- <input type="checkbox" ng-model="myswitch"/>
+</div>
+    {{myswitch}}
+
+<br/> <br/>
+<strong>The ng-show Directive </strong>
+<br/> <br/>
+<div>
+<p ng-show="swap">hello </p>
+<p ng-show="swap1">World</p>
+<input type="checkbox" ng-model="swap1"/>
+</div>
+<br/> <br/>
+<strong>The ng-Hide Directive </strong>
+<br/> <br/>
+<p ng-hide="swap"> Angular JS</p>
+
+<br/> <br/>
+<strong>The ng-click Directive </strong>
+<br/> <br/>
+<div ng-controller="con1">
+<button ng-click="count=count+1">Click Me! </button>
+{{count}}
+</div>
+<br/> <br/>
+<strong>Hiding HTML </strong>
+<br/> <br/>
+<div ng-controller="con2">
+<button ng-click="func()">Click User </button>
+<p ng-hide="myvar">
+Name1: <input type="text" ng-model="n1"/>
+Name2: <input type="text" ng-model="n2"/>
+
+Full Name: {{n1+" "+n2}}
+</p>
+</div>
+</html>
+<script>
+angular.module('angular', []);
+
+function con1($scope){
+$scope.count=0;
+}
+function con2($scope){
+$scope.n1="xyz";
+$scope.n2="qwe";
+$scope.func=function(){
+$scope.myvar=!$scope.myvar;
+};
+}
+</script>
+
+</apex:page>

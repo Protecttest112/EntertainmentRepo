@@ -1,0 +1,25 @@
+<apex:component >
+   
+    <!-- Header Section --->
+    <div class="header"> 
+        <!-- Top Left Banner --->    
+        <div style = "text-align: left;
+                      margin-top: 5%;
+                      margin-left: ;">
+            <apex:image id="sunPharmaFaxBanner" url="{!$Resource.ajaxLoadGif}"/> 
+        </div> 
+        <!-- Top Left Banner --->     
+        <!-- Top Center Text --->
+        <div Style = "text-align: center; 
+                      font-family:Arial, Helvetica, sans-serif; 
+                      font-size:18pt; 
+                      margin-left: 20px; 
+                      color:black;
+                      margin-top: -7%;"> 
+            <p><b>Reimbursement Program</b></p>
+            <p style = "font-size: 10pt; margin-top: -3%">Phone: XXX-XXX-XXXX | Fax: XXX-XXX-XXXX</p>
+        </div>
+        <!-- Top Center Text --->  
+    </div>
+    <!-- Header Section --->
+</apex:component>

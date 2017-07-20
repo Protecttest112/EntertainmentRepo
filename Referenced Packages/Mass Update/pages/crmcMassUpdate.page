@@ -1,0 +1,142 @@
+<apex:page controller="CRMC_MassUpdate.crmcMassUpdateController">
+    <style>
+    .override{
+        vertical-align: middle;
+        }
+    </style>
+    <script>
+    var dependentPicklists = JSON.parse('{!dependentPicklists}');
+    function fixWidth() {
+		var divs = "<apex:repeat value="{!tables}" var="Table" >{!Table} </apex:repeat>";
+        for( var div in divs.split(" "))
+        {
+            if (document.getElementById((divs.split(" ")[div])+"_div") && document.getElementById((divs.split(" ")[div])+"_head"))
+        		document.getElementById((divs.split(" ")[div])+"_div").style.width = (document.getElementById((divs.split(" ")[div])+"_head").offsetWidth-40) + "px";
+        }
+    }
+    function clickHandler(fieldName)
+    {
+        propagateChecksUp(fieldName, true);
+    }
+    
+    function checkHandler(checkBox, fieldName)
+    {
+        propagateChecksUp(fieldName, checkBox.checked);
+    }
+    
+    function propagateChecksUp(fieldName, checkedValue)
+    {
+        checkByCrmcId(fieldName+"_check", checkedValue);
+    	if (dependentPicklists[fieldName] != null)
+        {
+            propagateChecksUp(dependentPicklists[fieldName], checkedValue);
+        }
+        else
+        {
+            propagateChecksDown(fieldName, checkedValue);
+        }
+    }
+    
+    function propagateChecksDown(fieldName, checkedValue)
+    {
+        for (var i in dependentPicklists)
+        {
+            if (dependentPicklists[i] == fieldName)
+            {               
+        		checkByCrmcId(i+"_check", checkedValue);
+                propagateChecksDown(i, checkedValue);
+            }
+        }
+    }
+    
+    function checkByCrmcId(crmcId, checkValue)
+    {
+        var inputs = document.getElementsByTagName('input');
+        for (var i in inputs)
+        {
+            if (inputs[i].type == "checkbox" && inputs[i].getAttribute('crmcId') == crmcId)
+                inputs[i].checked = checkValue;
+        }
+    }
+    window.onresize = fixWidth;
+    </script>
+    <apex:pageBlock title="Errors" rendered="{!Errors}">
+        <apex:PageMessages />
+    </apex:pageBlock>
+    <apex:form >
+        <apex:repeat value="{!tables}" var="Table" >
+            <div id="{!Table}_head">
+                <apex:pageBlock rendered="{!NOT(Errors)}" >
+                    <apex:pageBlockButtons >
+                        <apex:commandButton value="Save" action="{!Save}" />
+                        <apex:commandButton value="Cancel" action="{!Cancel}" immediate="true"/>           
+                    </apex:pageBlockButtons>
+                    <apex:pageBlockSection columns="1"  >
+                        <apex:facet name="header"><span style="color:black;">Mass Update {!$ObjectType[Table].labelPlural}</span></apex:facet>
+                        <apex:pageBlockTable value="{!Tables[Table].fields}" var="f"> 
+                            <apex:column headerValue="Update" width="35px">
+                                <apex:inputCheckbox styleClass="override" value="{!tables[Table].updatefields[f]}" label="Overwrite {!f}" html-crmcId="{!Table}_{!f}_check" disabled="{!NOT(Tables[Table].enabledFields[f])}" onchange="checkHandler(this, '{!Table}_{!f}');" />
+                            </apex:column>
+                            <apex:column headerValue="Field" width="20%">
+                                <span style="padding-right:5px;vertical-align: text-bottom;">{!f.Label}</span>
+                            </apex:column>
+                            <apex:column headerValue="New Value">
+                                <apex:inputField required="false" rendered="{!Tables[Table].Enabledfields[f]}" value="{!Tables[Table].Proto[f]}" html-fieldname="{!Table}_{!f}"/>
+                                <apex:inputText rendered="{!NOT(Tables[Table].Enabledfields[f])}"  disabled="true" title="Not Updateable" alt="Not Updateable" />
+                            </apex:column>
+                        </apex:pageBlockTable>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+            </div>
+            <apex:pageBlock >
+                <div style="width:800px; overflow-x:scroll;" id="{!Table}_div">
+                    <apex:pageBlockTable value="{!Tables[Table].records}" var="t" >
+                            <apex:column headerValue="Name" rendered="{!Tables[Table].displayName}">
+                            	<apex:outputLink value="{!URLFOR($Action[Table].View,t['Id'])}" >{!t['Name']}</apex:outputLink>               
+                            </apex:column>
+                        <apex:repeat value="{!tables[Table].fields}" var="f"> 
+                            <apex:column headerValue="{!f.Label}">
+                            	<apex:outputField value="{!t[f]}"  />               
+                            </apex:column>
+                        </apex:repeat>
+                    </apex:pageBlockTable>    
+                    </div>
+                </apex:pageBlock>
+        </apex:repeat>
+        <script>
+        fixWidth();
+        
+        function clickHandlerGenerator(field)
+        {
+            return function(){
+                clickHandler(field);
+            }
+        }
+        function concatHTML(collect)
+        {
+            var arr = [];
+            for (var i = 0; i < collect.length; i++)
+            {
+                arr.push(collect[i]);
+            }
+            return arr;
+        }
+        var inputs = [];
+        inputs = inputs.concat(concatHTML(document.getElementsByTagName('input')));
+        inputs = inputs.concat(concatHTML(document.getElementsByTagName('select')));
+        inputs = inputs.concat(concatHTML(document.getElementsByTagName('textarea')));
+        for(var i = 0; i < inputs.length; i++) 
+        { 
+            var item = inputs[i];
+            var field = item.getAttribute('fieldname');
+            if (field == undefined && item.parentNode != null && item.parentNode.parentNode != null && item.parentNode.parentNode.getAttribute('fieldname') != null)
+                field = item.parentNode.parentNode.getAttribute('fieldname');
+            if (field != null)
+            {
+                item.addEventListener('click', clickHandlerGenerator(field),false);
+                item.addEventListener('change', clickHandlerGenerator(field),false);                
+            }
+        }
+        </script>
+    </apex:form>
+</apex:page>

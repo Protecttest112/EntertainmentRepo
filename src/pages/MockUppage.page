@@ -1,0 +1,212 @@
+<apex:page showHeader="false" controller="mockupcontroller">
+   <head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>jQuery UI Datepicker - Default functionality</title>
+    <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css"/>
+    <link rel="stylesheet" href="/resources/demos/style.css"/>
+  <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
+  <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+  <script>
+  $( function() {
+    $( "#datepicker" ).datepicker();
+  } );
+  </script>
+</head>
+   <style> 
+      .overlay{
+      background-color: rgba(240,240,240,0.4);
+      position: fixed;
+      top:0;
+      left:0;
+      z-index: 999;
+      width:100%;
+      height:100%;
+      background-image: url('/img/loading32.gif');
+      background-repeat:no-repeat;
+      background-position: center center;
+      }
+      .p-subtitile{
+      font-size: 1.2em;
+      }
+      .p-title{
+      font-size: 2em;
+      font-weight: bold;
+      }
+    #next {
+    width: 20px;
+    height: 16px;
+    background: url('/img/func_icons/util/lookup20.gif') -400px 0;
+}   
+   </style>
+    <script>
+      $ = jQuery.noConflict();
+    function clickfunc(){
+$('[id$=datepicker]').datepicker("show");
+}
+     $(function() {
+          $( "#contactSearchDialog" ).dialog({
+                height: 400,
+                width: 800,
+                modal: true,
+                autoOpen: false,
+                close: function( event, ui ) {
+                    refreshContactSearch();
+                },
+                open: function( event, ui ) {
+                    refreshContactSearch();
+                }
+            });
+        });
+    
+    /* show contact search */
+        function showLenderDialog(){
+            alert('dialogue open');
+            $( "#contactSearchDialog" ).dialog( "open" );
+        }
+        
+    /* hide the contact search dialog */
+        function hideContactDialog(){
+            $( "#contactSearchDialog" ).dialog( "close" );
+        }
+    
+    </script>
+   <apex:outputPanel id="mainFormPanel" layout="block" styleClass="search-container">
+      <p class="p-title">Registration Form</p>
+      <apex:pageMessages />
+      <apex:form >
+         <apex:pageBlock id="mainBlock1" mode="maindetail">
+            <apex:pageBlockSection title="General Information" columns="2" id="lenderPageSection">
+               <apex:outputText id="lenderLoanNumberText" label="Sales Rep #:" value="{!$User.Username}"/>
+                 <apex:pageBlockSectionItem >
+                     <apex:outputLabel style="font-weight: bolder;">Purchase Order Number:</apex:outputLabel>
+                  <apex:outputPanel layout="block" styleClass="requiredInput">
+                     <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                     <apex:inputText id="investorInsuredText1" label="Investor/Insured Lender:" />
+                         </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:pageBlockSectionItem >
+                  <apex:outputLabel >Bill To Customer #:</apex:outputLabel>
+                  <apex:outputPanel layout="block" styleClass="requiredInput">
+                     <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                     <apex:inputText id="billcustomerId" label="Bill to Customer#:"  value="{!custname}"/>
+                     <a class="search-image" href="javascript:showLenderDialog()">
+                     <img id="next"/>
+                     </a> 
+                  </apex:outputPanel>
+                </apex:pageBlockSectionItem>
+                <apex:outputpanel title="Date of Transaction:" styleclass="labelCol vfLabelColTextWrap  last" style="padding-left:80px !IMPORTANT" >Date of transaction :
+                 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                 <input type="Text" id="datepicker" />
+                    <apex:image url="{!$Resource.calender}" onclick="clickfunc()" height="20"/>
+                 </apex:outputpanel>
+               </apex:pageblocksection>
+               <apex:pageblocksection >
+              <apex:pageBlockSectionItem >
+                  <apex:outputLabel >Ship To Customer #:</apex:outputLabel>
+                  <apex:outputPanel layout="block" styleClass="requiredInput">
+                     <apex:outputPanel layout="block" styleClass="requiredBlock"/>
+                     <apex:inputText id="lenderPolicyNumberText" label="Bill to Customer#:" />
+                     <a class="search-image" href="javascript:showLenderDialog()">
+                     <img id="next"/>
+                     </a> 
+                  </apex:outputPanel>
+                  </apex:pageBlockSectionItem>
+                   <apex:pageBlockSection >
+              <apex:inputText id="commentsArea" label="Adress Information"/>
+                   </apex:pageBlockSection>
+             <apex:pageBlockSectionItem >
+                        <apex:outputLabel >Transaction Type:</apex:outputLabel>
+                           <select>
+  <option value="volvo">Online</option><option value="saab">Cheque</option>
+  <option value="vw">VW Banking</option><option value="audi">Transfer</option>
+</select>
+                     </apex:pageBlockSectionItem>
+             </apex:pageblocksection>
+             
+         </apex:pageblock>
+      </apex:form>
+   </apex:outputpanel>
+    
+    <!-- Contact Search Dialog -->
+     
+    <div id="contactSearchDialog">
+        <apex:form >
+            <h1>Contact Search</h1><br/>
+            <apex:pageBlock mode="mainDetail" id="mainContactSearchBlock">
+                <apex:pageMessages />
+                <apex:pageBlockSection title="" collapsible="false"/>
+                <section>
+                    <div class="search-field-container drag-left">
+                        <b>Name:</b> &nbsp;
+                        <apex:inputText id="contactNameText" html-placeholder="Name" value="{!contactSearchInput.name}"/>
+                    </div> <br/>
+                    <div class="search-field-container drag-left">
+                        <b>Email:</b> &nbsp;&nbsp;
+                        <apex:inputText id="contactEmailText" html-placeholder="Email" value="{!contactSearchInput.email}"/>
+                    </div> <br/>
+                    <div class="search-field-container drag-left">
+                        <b>Phone:</b>&nbsp;
+                        <apex:inputText id="contactPhoneText" html-placeholder="Phone" value="{!contactSearchInput.phone}"/>
+                    </div>
+                    <div class="clear"/>
+                </section>
+            </apex:pageBlock>
+
+            <section class="button-section drag-right">
+                <apex:commandButton value="Search" action="{!contactSearch}" status="loadingStatus" reRender="mainContactSearchBlock, contactResultPanel"/>
+                <apex:commandButton value="Reset" action="{!resetContactSearch}" status="loadingStatus" reRender="mainContactSearchBlock, contactResultPanel"/>
+            </section>            
+            <apex:outputPanel id="contactResultPanel">
+                <apex:pageBlock mode="mainDetail"  rendered="{!listofSubmissionContacts != null}">
+                    <apex:pageBlockSection title="Search Results[{!listofSubmissionContacts.size}]" columns="1">
+                        <apex:pageBlockTable value="{!listofSubmissionContacts}" var="con" rendered="{!listofSubmissionContacts.size > 0}">
+                            <apex:column headerValue="Name">
+                               <a href="javascript:getSubmissionContactInformation('{!con.id}')">{!con.Name}</a>
+                            </apex:column>
+                            <apex:column headerValue="Email" value="{!con.Email}"/>
+                            <apex:column headerValue="Phone" value="{!con.Phone}"/>
+                        </apex:pageBlockTable>    
+                        <apex:outputLabel styleClass="p-subtitile" rendered="{!listofSubmissionContacts.size == 0}">No results found!</apex:outputLabel>
+                    </apex:pageBlockSection>
+                </apex:pageBlock>
+            </apex:outputPanel> 
+<apex:actionFunction name="getSubmissionContactInformation" action="{!contactinfoupdated}" reRender="billcustomerId" oncomplete="hideContactDialog()" status="loadingStatus">
+                <apex:param name="contactRecordID" value="" assignTo="{!submissionContactID}"/>
+            </apex:actionFunction>
+              <apex:actionFunction name="refreshContactSearch" action="{!resetContactSearch}" reRender="mainContactSearchBlock, contactResultPanel" status="loadingStatus" immediate="true"/>
+        </apex:form>
+    </div>
+    
+    <!-- Table contents-->
+    <apex:form >
+    <apex:pageblock >
+   <apex:pageBlockTable value="{!userInput}" var="addRow" >
+                            <apex:column headerValue="Product Number">
+                                <apex:inputtext value="{!addRow.productno}" />
+                            </apex:column>
+       <apex:column headerValue="Lot Number">
+                                <apex:inputtext value="{!addRow.lotno}" />
+                            </apex:column>
+       <apex:column headerValue="Quantity">
+                                <apex:inputtext value="{!addRow.qty}" />
+                            </apex:column>
+       <apex:column headerValue="Unit Price">
+                                <apex:inputtext value="{!addRow.unitprice}" />
+                            </apex:column>
+       <apex:column headerValue="Extended price">
+                                <apex:inputtext value="{!addRow.extprice}" />
+                            </apex:column>
+      </apex:pageBlockTable>
+      </apex:pageblock>
+    <apex:pageblock >
+    <apex:pageblockSection >
+        <apex:pageBlockSectionItem >
+                  <apex:outputLabel >Comments</apex:outputLabel>
+                     <apex:inputTextarea id="billcustomerId" label="Bill to Customer#:"  value="{!comments}" rows="10" cols="80"/>
+                </apex:pageBlockSectionItem>
+            </apex:pageblockSection>
+    </apex:pageblock>
+        </apex:form>
+    
+</apex:page>

@@ -1,0 +1,20 @@
+<apex:page Controller="sessionCall" sidebar="false" showHeader="false">
+    <p><h3><center>Input Form : </center></h3></p>
+<apex:form >
+<apex:pagemessages ></apex:pagemessages>
+    <apex:pageBlock >
+        <apex:pageblockSection >
+            <apex:outputLabel value="Enter Name:" ></apex:outputLabel>
+            <apex:inputText value="{!Name}" html-placeholder="Enter Name"/>
+            <apex:outputLabel value="Enter Phone:"></apex:outputLabel>
+            <apex:inputText value="{!Phone}" html-placeholder="Enter Phone" />
+            <apex:outputLabel value="Enter Description:"></apex:outputLabel>
+            <apex:inputText value="{!Descwe}" html-placeholder="Enter Description"/>
+            <apex:outputLabel value="Enter AccountNumber:"></apex:outputLabel>
+            <apex:inputText value="{!AccNum}" html-placeholder="Enter Account Number"/>
+            <center>
+                <apex:commandButton value="Send Details" action="{!getOAuthCode}" /> </center>
+        </apex:pageblockSection>
+    </apex:pageBlock>
+</apex:form>
+</apex:page>

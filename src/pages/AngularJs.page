@@ -1,0 +1,57 @@
+<apex:page >
+<html ng-app="angular">
+
+<head>
+<script src= "//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+</head>
+
+<body>
+
+<div>
+ 
+<p>Input something in the input box:</p>
+<p>Name: <input type="text" ng-model="name" /></p>
+{{name}}
+
+</div>
+
+</body>
+</html>
+
+<div ng-app="" ng-init="person=[1,8,9,2]">
+{{person[2]}}
+</div>
+
+<h2> Data Binding </h2>
+
+<div ng-app="" ng-init="Quantity=1;Cost=2">
+<br/><br/><br/>
+Quantity : <input type="number" ng-model="Quantity"/>
+Cost : <input type="number" ng-model="Item"/>
+<br/> <br/>
+{{Quantity + Cost}} <br/> <br/>
+{{Quantity + Item}}
+</div>
+
+<h2>Repeating HTML Elements</h2>
+<div ng-init="array=[3,4,5,6,7,9]">
+<br/>
+{{array[3]}}
+<br/>
+</div>
+
+<div ng-app="" ng-init="city=[{name:'Mumbai',Code:'MH'},{name:'Guwahati',Code:'AS'},{name:'Kolkata',Code:'WB'}]">
+
+{{city[2].name}}
+
+
+<ul ng-repeat="X in city">
+{{X.name}} <br/>
+{{X.Code}}
+</ul>
+
+</div>
+<script>
+var myapp = angular.module('angular', []);
+</script>
+</apex:page>

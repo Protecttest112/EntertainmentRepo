@@ -1,0 +1,82 @@
+<aura:component >
+    <aura:registerEvent name="addItem" type="c:addItemEvent" />
+        <aura:attribute name="newitem" type="Camping_Item__c" default="{ 'sobjectType': 'Camping_Item__c',
+                                                                   'Name': '',
+                                                                   'Price__c': 0,
+                                                                   'Quantity__c': 0,
+                                                                   'Packed__c': '' }" />
+    
+    <div class="slds-page-header" role="banner">
+        <div class="slds-grid">
+            <div class="slds-col">
+                <p class="slds-text-heading--label">Campaign</p>
+                <h1 class="slds-text-heading--medium">My campaign</h1>
+            </div>
+        </div>
+    </div>
+ <div class="slds-col slds-col--padded slds-p-top--large">
+          
+  <div aria-labelledby="newcampaignform">
+
+  <!-- BOXED AREA -->
+  <fieldset class="slds-box slds-theme--default slds-container--small">
+
+    <legend id="newexpenseform" class="slds-text-heading--small 
+      slds-p-vertical--medium">
+      Add Campaign
+    </legend>
+
+    <!-- CREATE NEW EXPENSE FORM -->
+    <form class="slds-form--stacked">
+
+      <div class="slds-form-element slds-is-required">
+          <div class="slds-form-element__control">
+              <ui:inputText aura:id="Name" label="Campaign Name"
+                  class="slds-input"
+                  labelClass="slds-form-element__label"
+                  value="{!v.newitem.Name}"
+                  required="true"/>
+          </div>
+     </div>
+
+     <div class="slds-form-element slds-is-required">
+          <div class="slds-form-element__control">
+              <ui:inputNumber aura:id="PriceId" label="Price"
+                  class="slds-input"
+                  labelClass="slds-form-element__label"
+                  value="{!v.newitem.Price__c}"
+                  required="true"/>
+
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          <div class="slds-form-element__control">
+              <ui:inputNumber aura:id="QtyId" label="Quantity"
+                  class="slds-input"
+                  labelClass="slds-form-element__label"
+                  value="{!v.newitem.Quantity__c}"
+                  required="true"/>
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          <div class="slds-form-element__control">
+              <ui:inputCheckbox aura:id="packedId" label="Packed?"
+                  class="slds-input"
+                  labelClass="slds-form-element__label"
+                  value="{!v.newitem.Packed__c}" />
+          </div>
+      </div>
+
+      <div class="slds-form-element">
+          <ui:button label="Create Campaign"
+              class="slds-button slds-button--brand"
+              press="{!c.submitForm}"/>
+      </div>
+
+    </form>
+   </fieldset>
+  </div>
+    </div>
+</aura:component>

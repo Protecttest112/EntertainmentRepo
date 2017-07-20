@@ -1,0 +1,59 @@
+<apex:page showHeader="false" tabStyle="Account" standardController="Account">
+    <script type="text/javascript">
+    var __sfdcSessionId = '{!GETSESSIONID()}';
+    </script>
+    <script src="../../soap/ajax/36.0/connection.js" type="text/javascript"></script>
+    <script src="https://code.jquery.com/jquery-1.9.1.min.js"></script>
+    <style>
+    th {
+        white-space: nowrap !IMPORTANT;
+         padding-left: 38px !IMPORTANT;
+
+    }
+    </style>
+    <div id="output"> </div>
+    <apex:form id="theform" >
+    <apex:pageBlock mode="mainDetail" id="mainBlock">
+    <apex:pageBlockSection columns="1" id="lenderPageSectionEdit" >
+    <apex:outputText label="Certificate Number1" id="inputCertNum1" />    
+    <apex:outputText label="Certificate Number2" id="inputCertNum2" />
+    <apex:outputText label="Certificate Number3" id="inputCertNum3" />
+    <apex:outputText label="Certificate Number4" id="inputCertNum4" />
+    </apex:pageBlockSection>
+    </apex:pageBlock>
+    </apex:form>
+    
+     <script type="text/javascript">     
+   $( document ).ready(function() {
+      var state = { 
+          output : document.getElementById("output"),
+          startTime : new Date().getTime()};
+
+      var callback = {
+          onSuccess: layoutResults,
+          onFailure: queryFailed,
+          source: state};
+
+      sforce.connection.query(
+          "Select Id, Name, Account.Name, Type From Opportunity order by CREATEDDATE ASC LIMIT 1",
+           callback);
+  });
+
+  function queryFailed(error, source) {
+    source.output.innerHTML = "An error has occurred: " + error;
+  }
+
+  function layoutResults(queryResult, source) {
+  var cid = '{!Account.Id}';
+  alert(cid)
+    if (queryResult.size > 0) {
+       var records = queryResult.getArray('records');
+       source.output.innerHTML = records[0].Name;
+         $("[id$='inputCertNum4']").text(records[0].Name);
+         $("[id$='inputCertNum3']").text(records[0].Type);
+         $("[id$='inputCertNum2']").text(records[0].Account.Name);
+    }
+  }
+  </script>
+    
+</apex:page>

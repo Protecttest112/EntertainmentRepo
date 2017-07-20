@@ -1,0 +1,21 @@
+<apex:page showHeader="false" sidebar="false" >
+    <div style="width:100%" class="gauge" id="gaugeId"></div>
+  <apex:includeScript value="{!$Resource.jgage}"/>
+  <apex:includeScript value="{!$Resource.raphael}"/>
+    <script>
+     function loadGauge() {  
+     alert('hello');
+        var g = new JustGage({
+            id: 'gaugeId',
+            value: Math.round('21'),
+            min: 0,
+            max: 150,
+            relativeGaugeSize: true,
+            symbol: "%",
+            levelColors: ['#ee1111', '#ffc40d', '#99b433'],
+            gaugeWidthScale: 0.5
+        });    
+    }
+    loadGauge();
+    </script>
+</apex:page>

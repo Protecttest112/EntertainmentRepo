@@ -1,0 +1,7 @@
+<aura:component >
+    <c:ComponentFacetChild >
+    <aura:set attribute="childHeader">
+        Hello Header Child Elements
+        </aura:set>
+        </c:ComponentFacetChild>
+</aura:component>

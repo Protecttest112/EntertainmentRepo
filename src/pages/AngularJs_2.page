@@ -1,0 +1,60 @@
+<apex:page showChat="true" showHeader="true" sidebar="false">
+<html ng-app="jsAngular">
+<head>
+     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+</head>
+<strong> AngularJS Filters </strong>
+<br/><br/>
+<div ng-controller="controller1">
+    {{lastName |uppercase}}
+</div>
+
+<div ng-controller="controller1">
+    {{lastName |lowercase}}
+</div>
+<br/><br/>
+<strong> Currency Filters </strong>
+<br/>
+<br/>
+<div ng-controller="controller1">
+    {{quantity*price |currency}}
+</div>
+<br/><br/>
+<strong> JS Directives </strong>
+<br/>
+<br/>
+<div ng-controller="controller2">
+<li ng-repeat="X in names | orderBy:'Name'">
+{{X.Name}}
+</li>
+</div>
+<br/><br/>
+<strong> Adding Filters to Directives </strong>
+<br/>
+<br/>
+Filter: <input type="text" ng-model="test"/>
+<div ng-controller="controller2">
+<br/><br/>
+<li ng-repeat="X in names | filter:test | orderBy:'Name'">
+{{X.Name+","+ X.State}}
+</li>
+</div>
+
+
+</html>
+<script>
+var myapp=angular.module('jsAngular',[]);
+
+function controller1($scope){
+    $scope.lastName='Doe';
+    $scope.quantity=10;
+    $scope.price =5;
+}
+
+function controller2($scope){
+$scope.names=[{Name:'Tom',State:'MH'},{Name:'Micheal',State:'CH'}];
+
+
+}
+</script>
+</apex:page>

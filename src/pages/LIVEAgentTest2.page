@@ -1,0 +1,29 @@
+<apex:page showHeader="false" standardStylesheets="false">
+    <div id="liveagent_invite_button_572i0000000AygY" style="display: none; position: fixed; border: 2px solid darkblue; border-radius: 5px; background-color: lightblue; height: 100px; width: 200px;">
+        <div style="cursor: pointer; padding: 5px; right: 0px; position: absolute; color: darkred; font-weight: bold;" onclick="liveagent.rejectChat('572i0000000AygY')">X</div>
+        <div style="cursor: pointer; top: 42px; left: 65px; position: absolute; font-weight: bold; font-size: 16px;" onclick="liveagent.startChat('572i0000000AygY')">Start Chat</div>
+    </div>
+    <script type='text/javascript' src='https://c.la2w1.salesforceliveagent.com/content/g/js/36.0/deployment.js' />
+    <script type='text/javascript'>
+        function buttonCallback(e) {
+            alert('IIII');
+            if (e == liveagent.BUTTON_EVENT.BUTTON_AVAILABLE) {
+            //    document.getElementById('liveagent_invite_button_572i0000000AygY').style.display = '';
+                document.getElementById('liveagent_invite_button_572i0000000AygY').style.left ='300px';
+                document.getElementById('liveagent_invite_button_572i0000000AygY').style.top ='200px';
+            }
+            if (e == liveagent.BUTTON_EVENT.BUTTON_UNAVAILABLE) {
+                document.getElementById('liveagent_invite_button_572i0000000AygY').style.display ='none';
+            }
+            if (e == liveagent.BUTTON_EVENT.BUTTON_ACCEPTED) {
+                document.getElementById('liveagent_invite_button_572i0000000AygY').style.display ='none';
+            }
+            if (e == liveagent.BUTTON_EVENT.BUTTON_REJECTED) {
+                document.getElementById('liveagent_invite_button_572i0000000AygY').style.display = 'none';
+            }
+        }
+        liveagent.enableLogging();
+        liveagent.addButtonEventHandler('572i0000000AygY', buttonCallback);
+        liveagent.init('https://d.la2w1.salesforceliveagent.com/chat', '572i0000000AygY', '00Di0000000kiIf');
+    </script>
+</apex:page>

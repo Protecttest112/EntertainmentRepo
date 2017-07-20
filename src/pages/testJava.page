@@ -1,0 +1,205 @@
+<apex:page standardStylesheets="false">
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"/>
+<script>
+function copyText()
+    {
+        alert("Mouse up over p1!");
+    }
+    
+function copyText2(x)
+    {   
+      x.style.background="yellow";
+    }
+
+function copyText3(x)
+    {    
+       x.style.background="White";
+    }
+    
+   
+    
+function hide(){
+<!-- Call Back and non call back function --> 
+$("#rt").hide("fast",copyText());
+
+
+}
+
+function show(){
+$("#rt").show("fast");
+}
+
+function toggle(){
+$("#rt").toggle("fast");
+}
+
+function fade(){
+$("#fade1").fadeIn();
+$("#fade2").fadeIn("slow");
+}
+
+function slide(){
+$("#slidee").slideDown(5000);
+}
+
+function stop(){
+$("#slidee").stop();
+}
+<!-- Method Chaining Method -->
+
+function chain(){
+$("#chaining").css("color","red").slideUp(2000).slideDown(2000).hide(3000);
+}
+
+function valtext(){
+alert ("t:"+$("#i1").val());
+
+}
+
+function htmltext (){
+alert (""+$("#t1").html());
+}
+
+function setValues(){
+$("#i1").val("i <b>setted </b>text");
+}
+
+function callback1(){
+$("#i1").val(function(i,origText){
+return "origanl Text:" +origText+ "New text: hello i am new   " +i;
+});
+}
+
+function attrback(){
+$("#a1").attr({"href" : "http://www.yahoo.com",
+"title" : "test done"});
+}
+function callattrback(){
+$("#a2").attr("href",function(i,origValue){
+return origValue + "/java"; 
+});
+}
+
+function add(){
+$("#add1").prepend("addded");
+}
+
+function addmultiple(){
+var a ='<i>abhik<i>';
+var b ='dey';
+var c =document.createElement("p"); 
+c.innerHTML="cap";
+$("#add1").prepend(a,b,c);
+
+}
+</script>
+
+<body >
+
+<!-- onmouseover function -->
+
+<p id = "rr" onmouseover="show()">showing me </p>
+<p id = "rt" onmouseover="hide()">hiding me </p>
+<p id=  "sx" >check <i> p </i> </p>
+<!-- alert at particular word on mouseover function -->
+
+<p id="tt" ><font>hello how are <font onmouseover="copyText()">you </font>doing </font></p>
+
+<!-- onfocus,onblur function -->
+
+<apex:form >
+<apex:inputtext onfocus="copyText2(this)" onblur="copyText3(this)" id="inputText1"> Name</apex:inputtext>
+<apex:inputtext onfocus="copyText2(this)" onblur="copyText3(this)" id="inputText2"> Name2</apex:inputtext>
+<br />
+
+<!-- hide,show,toggle function -->
+
+<button id="test" type="button" onclick="hide()">hide </button>
+<button id="teste" type="button" onclick="show()">show </button>
+<button id="testq" type="button" onclick ="toggle()"> toggle </button>
+
+<!-- fadeIn using apex command button function -->
+
+<apex:commandButton id="tert" onclick="fade()" value="fade" reRender="none" rendered="true"/>
+</apex:form>
+
+<!-- fadeIn,fadeout,fadeout function -->
+
+<div id="fade1" style ="width:24px;height:40px;display:none;background-color:blue;">
+</div> 
+<br/>
+<div id="fade2" style ="width:34px;height:50px;display:none;background-color:red;">
+</div> 
+<br/>
+
+<style>
+#slidee{
+padding:100px;
+text-align:left;
+display:none;
+}
+</style>
+
+
+<!-- STOP slideDown() and sildeUp Method  -->
+<button id="stopslide" type="button" onclick="stop()">stop slide now </button>
+
+<!-- slideDown() and sildeUp and sideToggle Method  -->
+<p onclick ="slide()">sliding text </p>
+<p id="slidee" >going down</p>
+
+<br>
+<!-- Method Chaining Method -->
+<p id="chaining"> Jquery is awesome </p>
+<button id="chains" type="button" onclick="chain()"> click Me </button>
+</br> 
+<p> ------------------------------------------------------------------------------------> </p>
+
+<!-- Html, Val and text function call -->
+
+<p id="t1" > this is bold <b> group</b> icon </p>
+
+<button id ="b2" type ="button" onclick="htmltext()"> htmltext</button> <br /> <br />
+Name: <input id="i1" value = "form"> </input><br /> <br />
+<button id ="b1" type ="button" onclick="valtext()"> formvalue</button>
+
+<p> ------------------------------------------------------------------------------------> </p>
+
+<button id="s1" type="button" > set text</button>
+<button id="s2" type="button" onclick="setValues()"> set input</button>
+
+<p> ------------------------------------------------------------------------------------> </p>
+
+<!-- Html and text and val call back function -->
+<button type="button" onclick="callback1()">override the value </button>
+
+<!-- Attr function -->
+<a href ="http://www.google.com" id="a1" title="testing goin on"> google </a> <br /> <br />
+<button type="button" onclick="attrback()">change the attr value </button> <br /> <br />
+
+<!-- Attr call function -->
+<br /> <br />
+<a href ="http://www.google2.com" id="a2" title="test2 goin on"> google2 </a> <br /> <br />
+<button type="button" onclick="callattrback()()">call back attr</button> <br /> <br />
+
+<!-- Append and prepend function-->
+
+<p id="add1" onmouseover="add()">THis is a add method test</p>
+<button type="buton" onClick="addmultiple()">multiple text</button>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+</body>
+</apex:page>

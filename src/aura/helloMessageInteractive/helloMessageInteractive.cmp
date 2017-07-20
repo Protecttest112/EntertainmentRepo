@@ -1,0 +1,8 @@
+<aura:component >
+    <aura:attribute name="message" type="String" />
+    
+    <ui:outputtext value="{!'The interactive message:- '+v.message}" /> 
+    <br/> <br/>
+    <ui:button label="Button1" press="{!c.handlebtn1}" /> <br/>
+    <ui:button label="Button2" press="{!c.handlebtn2}" />
+</aura:component>
