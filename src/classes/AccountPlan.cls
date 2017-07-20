@@ -8,7 +8,7 @@ global class AccountPlan {
       webservice String name;
       webservice Integer planNumber;
       webservice Date planningPeriod;
-      webservice Id planId;            
+      webservice Id planId;             
    }
 
    webservice static Plan createAccountPlan(Account vPlan) {
